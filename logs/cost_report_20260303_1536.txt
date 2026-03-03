@@ -1,0 +1,22 @@
+
+=== REPORTE DE COSTOS VMC-Bot — Ultimos 30 dias ===
+
+[OK] OK: 0% del presupuesto usado ($0.00 / $168.00)
+
+TOKENS CONSUMIDOS:
+  Input:  0 tokens
+  Output: 0 tokens
+  Total:  0 tokens
+
+COSTOS POR MODELO:
+
+METRICAS:
+  Llamadas totales:        0
+  Costo total:             $0.0000
+  Costo promedio/mensaje:  $0.000000
+  Costo promedio/chat:     $0.0000
+
+PRESUPUESTO MENSUAL: $168.00
+  Gastado:   $0.0000
+  Restante:  $168.0000
+

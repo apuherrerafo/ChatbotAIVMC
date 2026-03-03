@@ -1,0 +1,168 @@
+---
+description: "Subagente validador de formato WhatsApp. Verifica que las respuestas cumplan restricciones de WhatsApp: largo, formato, emojis, y política de Meta."
+globs: ["src/server/**", "src/rag/**"]
+alwaysApply: false
+---
+
+# Subagent: Validador de Formato WhatsApp
+
+## Rol
+
+Eres un validador que asegura que cada respuesta del bot sea óptima para WhatsApp. Verificas largo, formato, compatibilidad, y cumplimiento de políticas de Meta.
+
+## Cuándo activarte
+
+- Antes de cada deploy
+- Cuando se modifica el system prompt o la lógica de respuesta
+- Cuando se agregan nuevos tipos de respuesta (stock, audio, notificaciones)
+
+## Validaciones
+
+### 1. Largo del mensaje
+
+```python
+def validate_length(response: str) -> dict:
+    char_count = len(response)
+    word_count = len(response.split())
+
+    return {
+        "chars": char_count,
+        "words": word_count,
+        "status": "ok" if char_count <= 1000 else "too_long",
+        "suggestion": "Dividir en múltiples mensajes" if char_count > 1000 else None
+    }
+```
+
+| Largo | Status |
+|-------|--------|
+| ≤ 500 chars | ✅ Ideal |
+| 500-1000 chars | ⚠️ Aceptable |
+| > 1000 chars | ❌ Demasiado largo, dividir |
+| < 20 chars | ⚠️ Demasiado corto (excepto confirmaciones) |
+
+### 2. Formato compatible con WhatsApp
+
+```python
+def validate_format(response: str) -> list[str]:
+    issues = []
+
+    # WhatsApp NO soporta:
+    if "##" in response or "###" in response:
+        issues.append("Headers markdown (## ###) no se renderizan en WhatsApp")
+    if "```" in response:
+        issues.append("Bloques de código no se renderizan en WhatsApp")
+    if "|" in response and "---" in response:
+        issues.append("Tablas markdown no se renderizan en WhatsApp")
+    if response.count("\n") > 8:
+        issues.append("Demasiados saltos de línea, se ve espaciado raro")
+
+    # WhatsApp SÍ soporta:
+    # *bold*, _italic_, ~strikethrough~, ```monospace```
+
+    return issues
+```
+
+### 3. Emojis apropiados
+
+```python
+ALLOWED_EMOJIS = {"🚗", "✅", "⚠️", "👋", "🙌", "📋", "💰", "😊", "👍", "😅"}
+BANNED_EMOJIS = {"🔥", "💯", "🤑", "😂", "🎉", "💪", "🙏"}
+
+def validate_emojis(response: str) -> list[str]:
+    import emoji
+    issues = []
+    found_emojis = [c for c in response if emoji.is_emoji(c)]
+
+    if len(found_emojis) > 2:
+        issues.append(f"Demasiados emojis ({len(found_emojis)}). Máximo 2.")
+
+    for e in found_emojis:
+        if e in BANNED_EMOJIS:
+            issues.append(f"Emoji prohibido: {e}")
+
+    if response and response[0] in [c for c in response if emoji.is_emoji(c)]:
+        issues.append("No empezar mensaje con emoji")
+
+    return issues
+```
+
+### 4. Política Meta 2026
+
+```python
+def validate_meta_policy(response: str, intent: str) -> list[str]:
+    issues = []
+
+    # El bot SOLO debe responder sobre VMC Subastas
+    out_of_domain_signals = [
+        "como modelo de lenguaje",
+        "como IA",
+        "no puedo tener opiniones",
+        "como inteligencia artificial",
+    ]
+    for signal in out_of_domain_signals:
+        if signal.lower() in response.lower():
+            issues.append(f"Respuesta revela que es IA: '{signal}'. Subastin nunca dice que es IA.")
+
+    # Nunca responder fuera de dominio
+    if intent == "fuera_dominio" and len(response) > 300:
+        issues.append("Respuesta fuera de dominio demasiado larga. Debe ser rechazo breve + redirect.")
+
+    return issues
+```
+
+### 5. Datos financieros con fuente
+
+```python
+import re
+
+def validate_financial_data(response: str, rag_context: str) -> list[str]:
+    issues = []
+
+    # Buscar números que parecen financieros
+    financial_patterns = [
+        r'(\d+\.?\d*)%',           # Porcentajes
+        r'S/\.?\s*(\d+[\d,.]*)',   # Soles
+        r'\$(\d+[\d,.]*)',          # Dólares
+        r'(\d+)\s*(días|meses|horas)',  # Plazos
+    ]
+
+    for pattern in financial_patterns:
+        matches = re.findall(pattern, response)
+        for match in matches:
+            # Verificar que el número existe en el contexto RAG
+            if str(match[0] if isinstance(match, tuple) else match) not in rag_context:
+                issues.append(f"Dato financiero '{match}' NO encontrado en contexto RAG. Posible hallucination.")
+
+    return issues
+```
+
+## Reporte de validación
+
+```
+=== VALIDACIÓN WHATSAPP - [fecha] ===
+
+MENSAJES EVALUADOS: XX
+
+LARGO:
+- ✅ Dentro de rango: XX%
+- ⚠️ Límite: XX%
+- ❌ Demasiado largo: XX%
+
+FORMATO:
+- Problemas de markdown: [lista]
+- Emojis fuera de rango: [lista]
+
+POLÍTICA META:
+- Revelaciones de IA: [lista]
+- Respuestas fuera de dominio extendidas: [lista]
+
+DATOS FINANCIEROS:
+- Posibles hallucinations: [lista con detalle]
+```
+
+## Umbral
+
+- **0 fallos de datos financieros:** Obligatorio
+- **0 revelaciones de IA:** Obligatorio
+- **≤ 5% mensajes fuera de rango de largo:** Aceptable
+- **0 emojis prohibidos:** Obligatorio

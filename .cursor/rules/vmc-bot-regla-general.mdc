@@ -1,0 +1,123 @@
+---
+description: Regla general del proyecto VMC-Bot. Se aplica SIEMPRE en cualquier archivo del proyecto.
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# VMC-Bot — Regla General del Proyecto
+
+## Qué es este proyecto
+
+Chatbot de IA para VMC Subastas (subastas de vehículos en Perú). Canal: WhatsApp Business API. Desarrollo 100% AI-driven con Cursor + MCPs. No hay equipo de programadores, solo un Lead AI Engineer.
+
+## Stack (usar SIEMPRE estos, nunca sugerir alternativas)
+
+| Componente | Herramienta | Notas |
+|------------|--------------|-------|
+| Backend | Python + FastAPI + Uvicorn | Puerto 8000. Ligero, sin frameworks pesados |
+| LLM principal | Claude Sonnet 4.5 (Anthropic API) | RAG, respuestas conversacionales |
+| LLM router | Claude Haiku 4.5 (Anthropic API) | Clasificar intención, multi-query. Rápido y barato |
+| Embeddings | Pinecone Inference (multilingual-e5-large) | Incluido en Pinecone, no usar OpenAI embeddings |
+| Vector DB | Pinecone (índice vmc-bot-rag, 1024 dims, cosine) | Starter plan gratuito |
+| Scraping | Firecrawl vía `src/core/firecrawl_client.py` | SIEMPRE usar el cliente seguro, nunca FirecrawlApp directo |
+| STT | Gemini 2.5 Flash | Notas de voz WhatsApp (Fase 4) |
+| TTS | ElevenLabs | Respuestas en audio (Fase 4) |
+| Canal | WhatsApp Business API (Meta Cloud / Twilio) | Aún no conectado |
+| Hosting | Railway o Render | Serverless |
+
+## Estructura del proyecto
+
+```
+vmc-bot/
+├── src/
+│   ├── core/          # ← NUEVO: infraestructura base del proyecto
+│   │   ├── logger.py          # Logging unificado + fix UTF-8 Windows
+│   │   ├── resilience.py      # Reintentos automáticos para Anthropic (429)
+│   │   └── firecrawl_client.py # Cliente seguro para Firecrawl
+│   ├── ingest/        # Taxonomía, chunking, embedding
+│   ├── rag/           # query_rag.py, multi-query, RRF, live sources
+│   └── server/        # FastAPI app, rutas, router de intención
+├── data/
+│   ├── raw/           # Crawls, markdowns originales, FAQs
+│   ├── processed/     # Chunks procesados
+│   └── golden_dataset/# Preguntas con respuestas esperadas
+├── logs/              # ← NUEVO: logs estructurados JSONL
+│   ├── rag_audit.jsonl      # Queries, chunks, respuestas
+│   ├── cost_tracker.jsonl   # Tokens y costos por llamada
+│   ├── errors.jsonl         # Errores de integraciones
+│   └── firecrawl_state.json # Estado del último scrape exitoso
+├── agents/            # Subagentes y skills ejecutables
+├── prompts/           # System prompts versionados
+├── static/            # Frontend de prueba HTML
+├── docs/              # Documentación del proyecto
+└── .env               # API keys (nunca commitear)
+```
+
+## Reglas absolutas (NUNCA violar)
+
+- **NO LangChain.** Nunca `from langchain import...`. Llamadas directas a SDKs.
+- **NO OpenAI.** Ni embeddings ni LLM. Todo es Anthropic + Pinecone Inference.
+- **NO inventar números.** Precios, comisiones, plazos y datos financieros SIEMPRE del RAG o JSON scrapeado. NUNCA generados por el LLM.
+- **NO frameworks pesados.** Sin Django, sin SQLAlchemy, sin ORMs. FastAPI + llamadas directas.
+- **NO bases de datos SQL/NoSQL.** Datos en Pinecone (vectores) y archivos JSON (inventario).
+- **NO llamar a Anthropic directamente.** SIEMPRE usar `call_claude_with_retry()` de `src/core/resilience.py`.
+- **NO usar FirecrawlApp directamente.** SIEMPRE usar `scrape_seguro()` o `crawl_seguro()` de `src/core/firecrawl_client.py`.
+- **NO usar print() en módulos de producción.** SIEMPRE usar `log_event()` de `src/core/logger.py`.
+- **Español peruano siempre.** Comentarios de código en español. Variables/funciones en inglés (convención Python).
+- **El bot SOLO responde sobre VMC Subastas.** Guardrail estricto para política de Meta 2026.
+
+## Imports de infraestructura (usar en todos los módulos)
+
+```python
+# Logging — reemplaza todos los print() de producción
+from src.core.logger import log_event, log_error, log_cost, log_rag_query, log_rag_response
+
+# Llamadas a Anthropic — siempre con retry automático
+from src.core.resilience import call_claude_with_retry, UserFacingError, MENSAJE_OCUPADO
+
+# Scraping — siempre con manejo de errores y fallback
+from src.core.firecrawl_client import scrape_seguro, crawl_seguro, verificar_creditos
+```
+
+## Manejo de errores (política obligatoria)
+
+- Todo error de Anthropic (429, conexión, status) → manejado por `resilience.py`. No capturar RateLimitError manualmente en otros módulos.
+- Todo error de Firecrawl → manejado por `firecrawl_client.py`. No capturar PaymentRequiredError manualmente.
+- Si `UserFacingError` llega al servidor → devolver `MENSAJE_OCUPADO` al usuario. Nunca el error técnico crudo.
+- Todo error relevante → registrar con `log_error()`. Nunca silenciar errores con `except: pass`.
+
+## Variables de entorno (.env)
+
+```
+ANTHROPIC_API_KEY=
+PINECONE_API_KEY=
+PINECONE_INDEX_NAME=vmc-bot-rag
+FIRECRAWL_API_KEY=
+# Futuras:
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+ELEVENLABS_API_KEY=
+GOOGLE_AI_API_KEY=
+```
+
+## Convenciones de código
+
+- Python 3.11+
+- Type hints siempre
+- Funciones async para endpoints FastAPI
+- Docstrings en español
+- Logging con `src/core/logger.py` (no prints, no logging estándar directo)
+- Manejo de errores con try/except y fallbacks claros
+- Archivos nuevos van en la carpeta correspondiente de `src/`, `data/` o `prompts/`
+
+## Roadmap (para contexto, no implementar fuera de orden)
+
+| Semana | Fase | Estado |
+|--------|------|--------|
+| 1 | Discovery + base de conocimiento + golden dataset | ✅ En curso |
+| 2 | MVP RAG en WhatsApp | ⏳ Pendiente |
+| 3 | Stock en tiempo real + Router + Playwright scraper | ⏳ Pendiente |
+| 4 | Audio + Refinamiento | ⏳ Pendiente |
+| 5 | Pilot + Handoff humano | ⏳ Pendiente |
+| 6 | Proactivo + Escalar | ⏳ Pendiente |

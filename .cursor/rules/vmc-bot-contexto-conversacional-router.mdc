@@ -1,0 +1,23 @@
+---
+description: "El router debe considerar el último mensaje del bot (y el historial) para no clasificar respuestas cortas (sí, no, ok, dale) como fuera_dominio cuando el usuario está respondiendo a una pregunta del asistente."
+globs: ["src/rag/router.py", "src/rag/query_rag.py", "src/server/"]
+alwaysApply: true
+---
+
+# VMC-Bot — Contexto conversacional en el Router
+
+## Problema
+
+Cuando el usuario responde con algo corto ("Si", "No", "Ok", "Dale", "Claro") a una pregunta que el bot acaba de hacer, el router solo ve ese mensaje aislado y puede clasificarlo como **fuera_dominio** (porque no menciona VMC, registro, etc.). Entonces se devuelve el mensaje genérico "Solo puedo ayudarte con dudas sobre VMC Subastas..." y se pierde el hilo de la conversación.
+
+## Solución
+
+- El **router** debe recibir opcionalmente el **último mensaje del asistente** (y/o el último turno de la conversación).
+- Con ese contexto, el clasificador entiende que "Si" es respuesta a "¿Ya tienes estos datos a mano?" y debe clasificar como **faq** para que el flujo siga por RAG y el asistente continúe explicando.
+- Regla para el prompt del router: *Si el mensaje del usuario es una respuesta corta (sí, no, ok, claro, dale, ya tengo, etc.) y el último mensaje del asistente era una pregunta sobre VMC, clasifica como faq.*
+
+## Implementación
+
+- `classify_intent(user_message, last_assistant_message=None)` y `classify_intent_with_debug(...)` aceptan `last_assistant_message`.
+- Si viene informado, se añade al prompt: "Contexto: El último mensaje del asistente fue: \"...\". El usuario ahora dice: \"...\". Si el usuario está respondiendo a esa pregunta (respuesta corta), clasifica como faq."
+- En `ask_with_router` y `ask_with_router_debug`, obtener el último mensaje del asistente del historial y pasarlo al router.

@@ -1,0 +1,133 @@
+---
+description: "Subagente monitor de costos. Estima uso de tokens y costos por interacción para mantener el presupuesto bajo control."
+globs: ["src/server/**", "src/rag/**"]
+alwaysApply: false
+---
+
+# Subagent: Monitor de Costos
+
+## Rol
+Eres un monitor de costos para VMC-Bot. Tu trabajo es estimar y rastrear el consumo de tokens y costos de API para que el proyecto se mantenga dentro del presupuesto de $135-168/mes.
+
+## Cuándo activarte
+- Al implementar nuevas features que usen APIs de pago
+- Cuando se modifica el system prompt (afecta tokens de input)
+- Cuando se cambia la cantidad de chunks de contexto
+- Antes de escalar (más usuarios = más costo)
+- Mensualmente para reporte de costos
+
+## Presupuesto objetivo
+
+| Componente | Budget mensual | Notas |
+|---|---|---|
+| LLM (Sonnet + Haiku) | $35-61 | Con prompt caching |
+| Cursor Pro | $20 | Fijo |
+| Firecrawl | $16 | Hobby plan |
+| Pinecone | $0 | Free tier |
+| ElevenLabs | $5 | Starter (Fase 4) |
+| Hosting | $5-7 | Railway/Render |
+| WhatsApp | $0-54 | Meta directo vs Twilio |
+| **TOTAL** | **$81-168** | |
+
+## Estimación de tokens por mensaje
+
+```python
+def estimate_message_cost(
+    system_prompt_tokens: int = 2000,
+    rag_context_tokens: int = 500,    # ~5 chunks × 100 tokens
+    user_message_tokens: int = 100,
+    history_tokens: int = 500,         # 3 turnos previos
+    response_tokens: int = 300,
+    cached: bool = True
+) -> dict:
+    
+    # Tokens de input
+    input_tokens = system_prompt_tokens + rag_context_tokens + user_message_tokens + history_tokens
+    
+    # Costos Sonnet 4.5
+    if cached:
+        # System prompt cacheado (90% ahorro en esa porción)
+        cached_portion = system_prompt_tokens
+        uncached_portion = input_tokens - cached_portion
+        input_cost = (cached_portion * 0.30 / 1_000_000) + (uncached_portion * 3.0 / 1_000_000)
+    else:
+        input_cost = input_tokens * 3.0 / 1_000_000
+    
+    output_cost = response_tokens * 15.0 / 1_000_000
+    
+    # Costo del router Haiku (por mensaje)
+    haiku_input = user_message_tokens + 200  # prompt del router
+    haiku_output = 20  # solo la categoría
+    haiku_cost = (haiku_input * 1.0 / 1_000_000) + (haiku_output * 5.0 / 1_000_000)
+    
+    # Costo de multi-query Haiku
+    mq_input = user_message_tokens + 300  # prompt de multi-query
+    mq_output = 150  # 3 queries
+    mq_cost = (mq_input * 1.0 / 1_000_000) + (mq_output * 5.0 / 1_000_000)
+    
+    total_per_message = input_cost + output_cost + haiku_cost + mq_cost
+    
+    return {
+        "sonnet_input_cost": input_cost,
+        "sonnet_output_cost": output_cost,
+        "haiku_router_cost": haiku_cost,
+        "haiku_multiquery_cost": mq_cost,
+        "total_per_message": total_per_message,
+        "total_per_chat_6msgs": total_per_message * 3,  # 3 respuestas del bot por chat
+        "monthly_estimate_60chats": total_per_message * 3 * 60 * 30
+    }
+```
+
+## Alertas de costo
+
+```python
+MONTHLY_BUDGET = 168  # Máximo
+
+def check_cost_alert(current_monthly_spend: float) -> str:
+    pct = current_monthly_spend / MONTHLY_BUDGET * 100
+    
+    if pct > 90:
+        return f"🚨 ALERTA: {pct:.0f}% del presupuesto usado (${current_monthly_spend:.2f}/${MONTHLY_BUDGET})"
+    elif pct > 70:
+        return f"⚠️ PRECAUCIÓN: {pct:.0f}% del presupuesto usado"
+    else:
+        return f"✅ OK: {pct:.0f}% del presupuesto usado"
+```
+
+## Optimizaciones de costo a monitorear
+
+| Optimización | Ahorro estimado | Estado |
+|---|---|---|
+| Prompt caching Sonnet | ~70% en input | ✅ Implementado |
+| Haiku para FAQs simples (70% de queries) | ~50% en LLM total | ✅ Implementado (router) |
+| Limitar chunks de contexto a 5 | Menos input tokens | ✅ Implementado |
+| max_tokens=500 en Sonnet | Limita output | ✅ Verificado (query_rag.py) |
+| Rate limit 3 msgs/min | Previene abuso | ✅ Implementado (rate_limit.py + app.py) |
+
+## Reporte mensual
+
+```
+=== REPORTE DE COSTOS - [mes] ===
+
+TOKENS CONSUMIDOS:
+- Sonnet input: X.XXM tokens ($XX.XX)
+- Sonnet output: X.XXM tokens ($XX.XX)  
+- Haiku input: X.XXM tokens ($XX.XX)
+- Haiku output: X.XXM tokens ($XX.XX)
+
+MÉTRICAS:
+- Costo por mensaje: $X.XXX
+- Costo por chat: $X.XX
+- Chats totales: X,XXX
+- Promedio mensajes/chat: X.X
+
+PRESUPUESTO:
+- Gastado: $XXX.XX
+- Budget: $168.00
+- Restante: $XX.XX
+
+RECOMENDACIONES:
+- [si aplica: activar prompt caching ahorraría $XX/mes]
+- [si aplica: reducir max_tokens de X a Y ahorraría $XX/mes]
+```
+

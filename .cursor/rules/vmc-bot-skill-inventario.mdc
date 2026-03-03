@@ -1,0 +1,152 @@
+---
+description: "Skill para scrapear inventario de vehículos de vmcsubastas.com, validar datos, y estructurar para búsqueda. Preparado para Semana 3."
+globs: ["src/ingest/**", "src/rag/live_source*", "data/raw/inventory*"]
+alwaysApply: false
+---
+
+# Skill: Scraping de Inventario y Validación
+
+## Estado: PREPARADO — Implementación en Semana 3
+
+## Schema del vehículo
+
+```python
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional
+
+@dataclass
+class Vehicle:
+    id: str                    # ID único en VMC
+    marca: str                 # Toyota, Hyundai, Kia...
+    modelo: str                # Hilux, Tucson, Sportage...
+    año: int                   # 2020
+    precio_base: float         # En soles (S/.)
+    estado: str                # disponible | en_subasta | adjudicado
+    tipo: str                  # camioneta | sedan | SUV | maquinaria | bus
+    url: str                   # URL al detalle en vmcsubastas.com
+    imagen_url: Optional[str]  # Foto principal
+    ubicacion: Optional[str]   # Sede VMC para inspección
+    kilometraje: Optional[int] # Si disponible
+    combustible: Optional[str] # gasolina | diesel | GLP | híbrido
+    transmision: Optional[str] # mecánica | automática
+    scraped_at: str            # ISO timestamp
+```
+
+## Pipeline de scraping
+
+### Paso 1: Scrape con Firecrawl
+
+```python
+from firecrawl import FirecrawlApp
+
+app = FirecrawlApp(api_key=os.getenv("FIRECRAWL_API_KEY"))
+
+result = app.scrape_url(
+    url="https://vmcsubastas.com/catalogo",  # URL a confirmar
+    params={"formats": ["markdown", "html"]}
+)
+```
+
+### Paso 2: Parsear a JSON estructurado
+
+```python
+def parse_vehicles(raw_content: str) -> list[Vehicle]:
+    """
+    Parsear el HTML/markdown del catálogo a objetos Vehicle.
+    NOTA: La estructura exacta del HTML depende de vmcsubastas.com.
+    Ajustar los selectores cuando se implemente.
+    """
+    vehicles = []
+    # TODO: Implementar parsing según estructura real del sitio
+    return vehicles
+```
+
+### Paso 3: Validar datos
+
+```python
+def validate_vehicle(v: Vehicle) -> tuple[bool, list[str]]:
+    errors = []
+    if not v.marca or not v.modelo:
+        errors.append("Falta marca o modelo")
+    if v.año < 1990 or v.año > 2027:
+        errors.append(f"Año sospechoso: {v.año}")
+    if v.precio_base <= 0:
+        errors.append(f"Precio inválido: {v.precio_base}")
+    if v.estado not in ["disponible", "en_subasta", "adjudicado"]:
+        errors.append(f"Estado desconocido: {v.estado}")
+    return len(errors) == 0, errors
+```
+
+### Paso 4: Guardar con timestamp
+
+```python
+import json
+from datetime import datetime
+
+def save_inventory(vehicles: list[Vehicle]):
+    timestamp = datetime.now().isoformat()
+    data = {
+        "scraped_at": timestamp,
+        "total": len(vehicles),
+        "vehicles": [vars(v) for v in vehicles]
+    }
+
+    # Guardar versión actual
+    with open("data/raw/inventory_current.json", "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    # Guardar como fallback
+    with open(f"data/raw/fallback/inventory.json", "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+```
+
+### Paso 5: Función de búsqueda
+
+```python
+def buscar_vehiculo(
+    marca: str = None,
+    modelo: str = None,
+    año_min: int = None,
+    año_max: int = None,
+    precio_max: float = None,
+    tipo: str = None
+) -> list[dict]:
+    """Busca vehículos en el inventario scrapeado."""
+    with open("data/raw/inventory_current.json") as f:
+        data = json.load(f)
+
+    results = data["vehicles"]
+
+    if marca:
+        results = [v for v in results if marca.lower() in v["marca"].lower()]
+    if modelo:
+        results = [v for v in results if modelo.lower() in v["modelo"].lower()]
+    if año_min:
+        results = [v for v in results if v["año"] >= año_min]
+    if año_max:
+        results = [v for v in results if v["año"] <= año_max]
+    if precio_max:
+        results = [v for v in results if v["precio_base"] <= precio_max]
+    if tipo:
+        results = [v for v in results if tipo.lower() in v["tipo"].lower()]
+
+    # Solo mostrar disponibles
+    results = [v for v in results if v["estado"] == "disponible"]
+
+    return {
+        "vehicles": results[:10],  # Máximo 10 resultados
+        "total_found": len(results),
+        "scraped_at": data["scraped_at"],
+        "disclaimer": f"Información actualizada al {data['scraped_at'][:10]}. La disponibilidad puede cambiar."
+    }
+```
+
+## Reglas
+
+- **SIEMPRE incluir timestamp** en respuestas de inventario
+- **SIEMPRE incluir disclaimer** de disponibilidad
+- **Validar CADA scrape** antes de reemplazar datos anteriores
+- **Mantener fallback** de último scrape exitoso
+- **Frecuencia:** 1x/día normal, 2x/día en días de subasta
+- **No scrapear de más:** Cuidar créditos de Firecrawl (plan Hobby = 3000/mes)

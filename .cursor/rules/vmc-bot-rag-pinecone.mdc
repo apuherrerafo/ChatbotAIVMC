@@ -1,0 +1,137 @@
+---
+description: Regla para todo lo relacionado con RAG, Pinecone, embeddings, chunking y retrieval.
+globs: ["src/rag/", "src/ingest/", "data/**"]
+alwaysApply: false
+---
+
+# VMC-Bot — RAG y Pinecone
+
+## Arquitectura RAG actual
+
+```
+Usuario pregunta
+    → Haiku clasifica intención (faq | stock_search | soporte_humano | fuera_dominio)
+    → Si FAQ:
+        → Haiku genera 3 variaciones (multi-query)
+        → Cada variación se embebe con Pinecone Inference (multilingual-e5-large)
+        → Búsqueda en Pinecone (top_k=5 por query)
+        → Reciprocal Rank Fusion (RRF) combina resultados
+        → Top chunks como contexto → Claude Sonnet genera respuesta
+    → Si stock_search: buscar en datos scrapeados (placeholder por ahora)
+    → Si soporte_humano: mensaje de escalamiento
+    → Si fuera_dominio: rechazo amable dentro del guardrail VMC
+```
+
+## Pinecone — Configuración
+
+```python
+# Índice existente
+index_name = "vmc-bot-rag"
+dimension = 1024  # multilingual-e5-large produce 1024 dims
+metric = "cosine"
+# Namespaces en uso: "helpcenter", posiblemente "faqs", "inventory" futuro
+
+# Embeddings — SIEMPRE usar Pinecone Inference, NO OpenAI
+from pinecone import Pinecone
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+
+# Generar embeddings
+embeddings = pc.inference.embed(
+    model="multilingual-e5-large",
+    inputs=["texto a embeber"],
+    parameters={"input_type": "passage"}  # "passage" para ingest, "query" para búsqueda
+)
+```
+
+**CRÍTICO:** Usar `input_type="passage"` al embeber chunks para ingest, y `input_type="query"` al embeber la pregunta del usuario para búsqueda.
+
+## Chunking — Reglas
+
+- Chunking **semántico por sección/tema**, NO por tamaño arbitrario.
+- Cada chunk lleva metadata: source, category, title, chunk_index.
+- Categorías siguen la taxonomía de `src/ingest/taxonomy.py`.
+- Tamaño objetivo: 200-500 tokens por chunk (flexible según el tema).
+- Solapamiento: incluir título de sección en cada chunk para contexto.
+
+```python
+# Estructura de un chunk para Pinecone
+{
+    "id": "helpcenter_registro_01",
+    "values": [...],  # embedding vector 1024 dims
+    "metadata": {
+        "source": "helpcenter",
+        "category": "registro",
+        "title": "Cómo registrarse en VMC Subastas",
+        "text": "El texto completo del chunk...",
+        "chunk_index": 0
+    }
+}
+```
+
+## Multi-Query — Implementación
+
+Haiku genera 3 variaciones de la pregunta del usuario para mejorar retrieval. Esto es crítico porque los usuarios peruanos usan vocabulario variado.
+
+```python
+# El prompt para Haiku debe pedir variaciones que cubran:
+# 1. Sinónimos peruanos (carro/vehículo/auto)
+# 2. Reformulaciones (cuánto cobran → comisión → tarifa)
+# 3. La pregunta original ligeramente expandida
+
+# Ejemplo:
+# Input: "cuánto cobran?"
+# Output: ["comisión de VMC Subastas", "tarifas por comprar en subasta", "porcentaje que cobra VMC por adjudicación"]
+```
+
+## Reciprocal Rank Fusion (RRF)
+
+Combina resultados de las 3 multi-queries en un solo ranking.
+
+```python
+def reciprocal_rank_fusion(results_lists: list[list], k: int = 60) -> list:
+    """
+    Fusiona múltiples listas de resultados usando RRF.
+    k=60 es el estándar del paper original.
+    """
+    fused_scores = {}
+    for results in results_lists:
+        for rank, result in enumerate(results):
+            doc_id = result["id"]
+            if doc_id not in fused_scores:
+                fused_scores[doc_id] = {"score": 0, "metadata": result["metadata"]}
+            fused_scores[doc_id]["score"] += 1 / (k + rank + 1)
+
+    return sorted(fused_scores.values(), key=lambda x: x["score"], reverse=True)
+```
+
+## Reglas de retrieval
+
+- `top_k=5` por cada query individual (15 resultados antes de RRF).
+- Después de RRF, tomar los top 3-5 chunks como contexto para Sonnet.
+- Si el score RRF más alto es muy bajo (< umbral), considerar que no hay información → responder "No tengo información sobre eso, te recomiendo contactar a soporte".
+- **NUNCA** pasar más de 5 chunks a Sonnet (costo de tokens + ruido).
+
+## Fuentes en vivo
+
+`src/rag/live_source.py` — Para contenido que cambia frecuentemente (ej: SubasPass). Firecrawl scrapea en tiempo real cuando se detecta que la pregunta es sobre ese tema. El contenido scrapeado se inyecta directamente al contexto, no pasa por Pinecone.
+
+## Ingest — Pipeline
+
+```
+Fuente (crawl, markdown, FAQ, infografía extraída)
+    → Limpiar texto
+    → Clasificar categoría (taxonomy.py)
+    → Chunkear por sección semántica (chunks.py)
+    → Generar embeddings (Pinecone Inference, input_type="passage")
+    → Upsert en Pinecone con metadata
+```
+
+## Archivos clave
+
+| Archivo | Rol |
+|---------|-----|
+| `src/ingest/taxonomy.py` | Categorías y clasificación |
+| `src/rag/chunks.py` | Chunking semántico |
+| `src/rag/embed.py` | Embeddings Centro de Ayuda |
+| `src/rag/embed_faqs.py` | Embeddings FAQs |
+| `src/rag/query_rag.py` | Pipeline de búsqueda completo |

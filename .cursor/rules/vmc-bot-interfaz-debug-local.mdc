@@ -1,0 +1,79 @@
+---
+description: "Regla e instrucción para que Cursor construya la interfaz de debug local. El servidor local tiene un chat completo con panel de debug. Esto NO va a producción ni a WhatsApp."
+globs: ["static/", "src/server/"]
+alwaysApply: false
+---
+
+# VMC-Bot — Interfaz de Debug Local
+
+## CONTEXTO PARA CURSOR
+
+Esta es la especificación para construir la interfaz de pruebas local del VMC-Bot. Necesitamos DOS cosas:
+
+1. **Frontend** (HTML/CSS/JS en `static/index.html`) con chat + panel de debug
+2. **Backend** (POST /api/ask) que retorna datos de debug junto con la respuesta
+
+## IMPORTANTE — SOLO LOCAL
+
+- Esta interfaz es **SOLO** para desarrollo y testing en localhost:8000
+- Cuando el bot se conecte a WhatsApp, los usuarios NUNCA ven esto
+- El frontend local se mantiene como herramienta de debug del desarrollador
+- El debug se activa/desactiva con **DEBUG_MODE=true|false** en `.env`
+- Cuando **DEBUG_MODE=false**, el endpoint NO retorna el campo `debug` (ahorra procesamiento)
+
+## ESPECIFICACIÓN DEL FRONTEND
+
+### Layout general
+
+- Pantalla dividida en dos columnas:
+  - **Izquierda (~40%)**: Chat que simula WhatsApp
+  - **Derecha (~60%)**: Panel de debug con todo lo que hace el bot por detrás
+- Barra superior: Logo "VMC-BOT", badge "DEBUG MODE", costo acumulado de la sesión, botón "Limpiar chat"
+
+### Panel izquierdo: Chat con Subastin
+
+- Estilo WhatsApp: fondo oscuro, burbujas (usuario derecha verde/azul, bot izquierda gris oscuro)
+- Historial persistente hasta "Limpiar chat"
+- Typing indicator (tres puntitos animados) mientras el bot procesa
+- Timestamps en cada mensaje
+- Scroll automático al último mensaje
+- Input abajo: texto + botón Enviar; Enter envía
+- Mensaje inicial de Subastin: "¡Hola! 👋 Soy Subastin, tu asesor en VMC Subastas. ¿En qué te puedo ayudar hoy?"
+
+### Panel derecho: Debug
+
+Para cada mensaje del usuario, una entrada de debug con secciones colapsables:
+
+1. **🧭 Router (Intención)**: intent (faq | stock_search | soporte_humano | fuera_dominio), modelo Haiku, tokens, latencia, explicación
+2. **🔀 Multi-Query**: las 3 variaciones de query (o "Omitido" si no aplica), tokens, latencia
+3. **📚 Retrieval (Pinecone)**: queries, chunks con score/categoría/preview, RRF aplicado, latencia
+4. **✨ Generación (Sonnet)**: modelo, tokens input/output y cacheados, latencia, system prompt y contexto RAG (colapsables), respuesta
+5. **💰 Costo estimado**: desglose Haiku router, Haiku multi-query, Sonnet input/output, total mensaje; costo acumulado sesión
+6. **⏱ Timeline visual**: barra proporcional (Router → Multi-query → Pinecone → Sonnet → otros), leyenda en ms
+
+### Diseño
+
+- Tema oscuro obligatorio
+- Tipografía monospace para datos técnicos; sans-serif para chat y explicaciones
+- Colores por sección para diferenciar (router, multiquery, retrieval, generation, cost)
+- Responsive NO necesario — solo desktop
+
+## ESPECIFICACIÓN DEL BACKEND
+
+- **Parámetro** `include_debug: bool = True` en el body del request
+- Si **DEBUG_MODE=true** en `.env` e **include_debug=True**, retornar campo **debug** en la respuesta
+- El pipeline instrumentado mide tiempos y captura tokens en cada paso (router, multi-query, retrieval, generación)
+- **Estructura** del response con debug: `response`, `debug` con intent, intent_latency_ms, intent_tokens, intent_explanation, multi_queries, multi_query_latency_ms, multi_query_tokens, retrieval (chunks, rrf_applied, retrieval_latency_ms, queries), generation (model, tokens, cached_tokens, latency_ms, system_prompt, rag_context, response_text), cost (this_message, breakdown), total_latency_ms
+- Cálculo de costos en backend con precios reales: Sonnet $3/$15 por M tokens, Haiku $1/$5 por M, cacheado input $0.30/M (Sonnet) y $0.10/M (Haiku)
+
+## VARIABLES DE ENTORNO
+
+- **DEBUG_MODE=true** en local para activar debug; **false** en producción.
+
+## RESUMEN
+
+- Frontend: chat tipo WhatsApp (izquierda) + panel de debug técnico (derecha)
+- Backend: mide tiempos, tokens y costos por paso y los retorna en `debug`
+- Solo para desarrollo local — nunca se expone a usuarios finales
+- Chat mantiene historial hasta "Limpiar chat"
+- Cada respuesta genera una entrada nueva en el panel de debug con trazabilidad completa

@@ -1,0 +1,43 @@
+[
+  {
+    "type": "conversation",
+    "id": "27253675288",
+    "created_at": 1643206381,
+    "updated_at": 1770497440,
+    "waiting_since": null,
+    "snoozed_until": null,
+    "source": {
+      "type": "conversation",
+      "id": "1165877379",
+      "delivered_as": "customer_initiated",
+      "subject": "",
+      "body": "<p>Buenos dias, ayer fui a notaria. Sin embargo, me informaron que el vehículo tiene otra deuda con la caja huancayo. Eso no me informaron. En mi caso me dedico a comprar y vender autos, por esa razón deseo que puedan solucionar ese levantamiento de caja huancayo para poder firmar en notaria. He pagado los gastos registrales, notariales y sat. Pero necesito que puedan solucinar el pago de caja huancayo para poder acercame a firmar en notaria. </p>",
+      "author": {
+        "type": "user",
+        "id": "61b3ad44cec8f915afc7ba20",
+        "name": "Lucio Hector Hinostroza Hurtado",
+        "email": "hinostrozapierre@gmail.com"
+      },
+      "attachments": [],
+      "url": "https://ayuda.vmcsubastas.com/es/collections/3079940-centro-de-ayuda-comprador",
+      "redacted": false
+    },
+    "contacts": {
+      "type": "contact.list",
+      "contacts": [
+        {
+          "type": "contact",
+          "id": "61b3ad44cec8f915afc7ba20",
+          "external_id": null
+        }
+      ]
+    },
+    "first_contact_reply": {
+      "created_at": 1643206381,
+      "type": "conversation",
+      "url": "https://ayuda.vmcsubastas.com/es/collections/3079940-centro-de-ayuda-comprador"
+    },
+    "admin_assignee_id": null
+  }
+  // ... resto del contenido original del JSON ...
+]

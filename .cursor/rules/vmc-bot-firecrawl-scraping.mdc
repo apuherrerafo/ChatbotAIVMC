@@ -1,0 +1,116 @@
+---
+description: Regla para scraping con Firecrawl, manejo de datos scrapeados, y validación de contenido.
+globs: ["src/ingest/", "src/rag/live_source*", "src/core/firecrawl_client.py", "data/raw/"]
+alwaysApply: false
+---
+
+# VMC-Bot — Firecrawl y Scraping
+
+## Regla fundamental
+
+**NUNCA usar FirecrawlApp directamente.** Siempre usar el cliente seguro:
+
+```python
+from src.core.firecrawl_client import scrape_seguro, crawl_seguro, verificar_creditos
+from firecrawl import FirecrawlApp
+import os
+
+app = FirecrawlApp(api_key=os.getenv("FIRECRAWL_API_KEY"))
+
+# ✅ CORRECTO
+contenido = scrape_seguro(app, "https://vmcsubastas.com/subaspass")
+
+# ❌ INCORRECTO — no hacer esto
+result = app.scrape_url("https://vmcsubastas.com/subaspass")
+```
+
+El cliente seguro maneja automáticamente:
+- Sin créditos (PaymentRequiredError) → avisa y no toca Pinecone
+- Contenido vacío → devuelve None con log
+- Fallback al último scrape exitoso
+- Registro en logs/errors.jsonl y logs/firecrawl_state.json
+
+## Dos usos de Firecrawl en el proyecto
+
+### 1. Centro de Ayuda (ya hecho, puntual)
+
+- **URL:** ayuda.vmcsubastas.com
+- **Frecuencia:** Una vez (ya crawleado), re-crawl cuando actualicen contenido
+- **Output:** Markdown en `data/raw/helpcenter_crawl/` y `data/raw/text/*.md`
+- **Problema conocido:** ~95% del contenido está en infografías/imágenes. Pipeline de extracción en curso.
+
+```python
+# Re-crawl del Centro de Ayuda
+paginas = crawl_seguro(app, "https://ayuda.vmcsubastas.com", limite=30)
+if paginas is None:
+    # Sin créditos o error — el contenido anterior en Pinecone NO fue modificado
+    # Ver logs/errors.jsonl para detalle
+    pass
+```
+
+### 2. Inventario de vehículos (Semana 3, diario)
+
+- **URL:** vmcsubastas.com (catálogo público)
+- **Frecuencia:** Diario (cron job). 2x/día en días de subasta.
+- **Output:** JSON estructurado en `data/raw/inventory.json`
+- **Estado:** Pendiente — usar Playwright como alternativa a Firecrawl (sin créditos)
+
+### 3. Fuentes en vivo (ya implementado)
+
+- **Ejemplo:** SubasPass (vmcsubastas.com/subaspass)
+- Se scrapea on-demand cuando el usuario pregunta sobre ese tema
+- No se almacena en Pinecone, se inyecta directo al contexto de Sonnet
+
+```python
+# Fuente en vivo — scrape on-demand
+contenido = scrape_seguro(app, "https://www.vmcsubastas.com/subaspass")
+if contenido:
+    # Inyectar al contexto RAG
+    contexto_adicional = contenido
+else:
+    # Sin contenido — responder con lo que hay en Pinecone
+    contexto_adicional = ""
+```
+
+## Schema del inventario de vehículos
+
+```python
+vehicle_schema = {
+    "id": str,              # ID único del vehículo en VMC
+    "marca": str,           # Toyota, Hyundai, etc.
+    "modelo": str,          # Hilux, Tucson, etc.
+    "año": int,             # 2020
+    "precio_base": float,   # Precio base en soles (S/.)
+    "estado": str,          # "disponible", "en_subasta", "adjudicado"
+    "tipo": str,            # "camioneta", "sedan", "SUV", "maquinaria"
+    "url": str,             # URL directa al detalle en vmcsubastas.com
+    "imagen_url": str,      # URL de la foto principal
+    "ubicacion": str,       # Sede VMC donde se puede inspeccionar
+    "scraped_at": str,      # ISO timestamp del scraping
+}
+```
+
+## Reglas de scraping
+
+- **SIEMPRE** usar `scrape_seguro()` o `crawl_seguro()` — nunca FirecrawlApp directamente
+- **SIEMPRE** verificar que el resultado no es None antes de procesar
+- **SIEMPRE** incluir timestamp en respuestas sobre stock: "Información actualizada al [fecha]. La disponibilidad puede cambiar."
+- **NUNCA** borrar contenido de Pinecone si el scrape falló — mantener last-known-good
+- Respetar rate limits: plan Hobby = 3,000 créditos/mes (1 scrape = 1 crédito, 1 crawl de N páginas = N créditos)
+- No scrapear más de lo necesario: Centro de Ayuda una vez, inventario 1-2x/día, SubasPass on-demand
+
+## Alternativa para inventario: Playwright
+
+Para el scraping diario de inventario se usará Playwright en lugar de Firecrawl:
+- Sin créditos, sin costo adicional
+- Más control sobre la extracción de datos estructurados
+- Script en: `agents/inventory_scraper/scrape_inventory.py` (Semana 3)
+
+## Problema conocido: contenido en imágenes
+
+El Centro de Ayuda tiene ~95% del contenido en infografías. Pipeline:
+
+1. Descargar imágenes desde markdown del crawl
+2. Pasar por Claude Vision para extraer texto (`src/ingest/extract_images.py`)
+3. Chunkear con taxonomía existente
+4. Embeber en Pinecone (`src/rag/embed_images.py`)

@@ -1,0 +1,125 @@
+---
+description: "Subagente auditor de contenido. Detecta gaps en el knowledge base: qué temas faltan, qué preguntas no tienen cobertura, qué contenido del Centro de Ayuda aún no se ha extraído."
+globs: ["data/**", "src/ingest/**", "src/rag/**"]
+alwaysApply: false
+---
+
+# Subagent: Auditor de Contenido
+
+## Rol
+
+Eres un auditor de cobertura de contenido para VMC-Bot. Tu trabajo es identificar qué información falta en Pinecone para que el bot pueda responder bien, y priorizar qué contenido ingestar primero.
+
+## Cuándo activarte
+
+- Periódicamente (cada vez que se ingesta contenido nuevo)
+- Cuando la evaluación RAG muestra muchas preguntas sin cobertura
+- Cuando se planifica qué infografías extraer primero
+- Antes de lanzar a un piloto (asegurar cobertura mínima)
+
+## Proceso de auditoría
+
+### 1. Mapa de contenido del Centro de Ayuda
+
+Revisar los artículos del Centro de Ayuda y su estado de extracción:
+
+```
+| # | Artículo | Tipo | Estado | Prioridad |
+|---|----------|------|--------|-----------|
+| 1 | Registro | Infografía | ❌ Pendiente | ALTA |
+| 2 | SubasCoins | Infografía | ❌ Pendiente | ALTA |
+| 3 | FAQ General | Texto | ✅ Extraído | - |
+| ... |
+```
+
+Para cada artículo:
+
+- **✅ Extraído y en Pinecone:** Contenido disponible para RAG
+- **⚠️ Parcialmente extraído:** Tiene texto pero falta la infografía
+- **❌ Pendiente:** No se ha extraído nada
+
+### 2. Análisis de cobertura por categoría
+
+Para cada categoría de la taxonomía, evaluar:
+
+```python
+# Consultar Pinecone para ver cuántos chunks hay por categoría
+from pinecone import Pinecone
+
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+index = pc.Index("vmc-bot-rag")
+
+stats = index.describe_index_stats()
+# Ver vectores por namespace y categoría
+```
+
+**Cobertura mínima por categoría:**
+
+- Registro: mínimo 5 chunks
+- SubasCoins: mínimo 5 chunks
+- Comisiones: mínimo 5 chunks
+- Proceso de subasta: mínimo 5 chunks
+- Cada otra categoría: mínimo 3 chunks
+
+### 3. Detección de gaps por preguntas sin respuesta
+
+Analizar las preguntas del golden dataset que tuvieron retrieval vacío o scores bajos:
+
+```
+PREGUNTAS SIN COBERTURA:
+1. "¿Cómo funciona la consignación?" → Categoría: consignaciones → 0 chunks
+   ACCIÓN: Extraer infografía de consignaciones
+
+2. "¿Qué pasa si no pago a tiempo?" → Categoría: pagos → 1 chunk (insuficiente)
+   ACCIÓN: Buscar más contenido sobre plazos de pago
+
+3. "¿Puedo ir a ver el carro antes?" → Categoría: visitas → 0 chunks
+   ACCIÓN: Extraer infografía de visitas e inspecciones
+```
+
+### 4. Análisis de preguntas frecuentes vs cobertura
+
+Si ya hay logs de conversaciones (web de prueba o piloto):
+
+```
+PREGUNTAS MÁS FRECUENTES vs COBERTURA:
+| Pregunta tipo | Frecuencia | Cobertura RAG | Gap |
+|---|---|---|---|
+| Comisiones | 25% | ⚠️ Parcial | Falta detalle por tipo |
+| Registro | 20% | ❌ Solo FAQ | Falta infografía paso a paso |
+| Stock | 18% | ❌ Placeholder | Semana 3 |
+| SubasCoins | 12% | ⚠️ Parcial | Falta proceso de compra |
+```
+
+### 5. Generar reporte de gaps y prioridades
+
+```
+=== AUDITORÍA DE CONTENIDO - [fecha] ===
+
+COBERTURA GENERAL: X/26 artículos extraídos (X%)
+
+GAPS CRÍTICOS (bloquean calidad del bot):
+1. [Categoría] — [qué falta] — [acción recomendada]
+
+GAPS ALTOS (mejoran significativamente):
+1. [Categoría] — [qué falta] — [acción recomendada]
+
+GAPS MEDIOS (nice to have):
+1. [Categoría] — [qué falta] — [acción recomendada]
+
+PRÓXIMAS 5 INFOGRAFÍAS A EXTRAER (en orden):
+1. [Artículo] — [razón de prioridad]
+2. ...
+
+CONTENIDO QUE NO ESTÁ EN EL CENTRO DE AYUDA PERO DEBERÍA:
+- [tema que los usuarios preguntan pero no existe en ninguna fuente]
+→ Flag para que VMC cree este contenido
+```
+
+## Output
+
+El reporte se guarda en `docs/auditoria_contenido_[fecha].md` y sirve como input para:
+
+- Priorizar extracción de infografías (skill-extraccion-infografias)
+- Identificar contenido que VMC debe crear
+- Informar al golden dataset qué preguntas agregar

@@ -1,0 +1,124 @@
+---
+description: "Skill para agregar, evaluar y mantener el golden dataset. Usar cuando se agrega contenido nuevo al RAG o cuando se necesita validar calidad de respuestas."
+globs: ["data/golden_dataset/**", "src/rag/**"]
+alwaysApply: false
+---
+
+# Skill: Golden Dataset — Agregar y Evaluar
+
+## Estado actual
+
+- **Archivo:** `data/golden_dataset/faqs_golden.json`
+- **Formato en uso:** `entries[]` con `id`, `topic`, `pregunta`, `respuesta_esperada`
+- **Meta:** 50 entradas mínimo antes del piloto (actualmente 50)
+
+## Estructura de una entrada (objetivo ampliado)
+
+```json
+{
+    "id": "GD-015",
+    "question": "¿Cuánto cobran de comisión?",
+    "expected_answer": "La comisión estándar es del X% sobre el precio de adjudicación.",
+    "category": "comisiones",
+    "source": "helpcenter",
+    "tags": ["comisión", "pagos", "costos"],
+    "difficulty": "easy",
+    "notes": "El usuario puede preguntar de muchas formas: cuánto cobran, qué porcentaje, cuánto se llevan"
+}
+```
+
+**Campos (mínimo en uso: id, topic, pregunta, respuesta_esperada):**
+
+- `id`: GD-XXX o g1, g2… (incremental)
+- `question` / `pregunta`: Pregunta tal como la haría un usuario real (español peruano, informal)
+- `expected_answer` / `respuesta_esperada`: Respuesta correcta basada en el RAG (datos verificados)
+- `category` / `topic`: Categoría de la taxonomía
+- `source`: (opcional) De dónde viene la respuesta correcta
+- `tags`: (opcional) Palabras clave para búsqueda
+- `difficulty`: (opcional) easy | medium | hard
+- `notes`: (opcional) Contexto adicional, variaciones posibles, trampas
+
+## Cómo agregar entradas
+
+### Regla 1: Cubrir variaciones de la misma pregunta
+
+No solo "¿Cuánto cuesta?" sino también "cuánto cobran", "qué tarifa tienen", "sale muy caro?".
+
+### Regla 2: Incluir preguntas trampa
+
+- Preguntas fuera de dominio: "¿quién ganó el partido?" → debe rechazar amablemente
+- Preguntas que intentan sacar datos inventados: "¿me puedes garantizar que el carro está bien?"
+- Preguntas ambiguas: "¿cómo funciona?" (¿qué cosa?)
+
+### Regla 3: Balance de categorías
+
+Apuntar a ~3-5 preguntas por categoría principal:
+
+- [ ] Registro (3-5)
+- [ ] SubasCoins (3-5)
+- [ ] Comisiones y pagos (3-5)
+- [ ] Proceso de subasta (3-5)
+- [ ] Consignaciones (3-5)
+- [ ] Visitas/inspecciones (2-3)
+- [ ] SubasPass (2-3)
+- [ ] Fuera de dominio (5+)
+- [ ] Preguntas ambiguas (3-5)
+
+### Regla 4: Cada nuevo contenido = nuevas entradas
+
+Cuando se ingesta contenido nuevo (infografía, video, FAQ), agregar inmediatamente 2-3 preguntas al golden dataset sobre ese contenido.
+
+## Cómo evaluar contra el bot
+
+**Script existente:** `scripts/eval_golden.py`
+
+```bash
+# Evaluar las 50 preguntas
+python scripts/eval_golden.py
+
+# Solo las primeras N
+python scripts/eval_golden.py --limit 10
+
+# Sin router (directo a RAG)
+python scripts/eval_golden.py --skip-router
+```
+
+El script usa `ask_with_router` (o `ask_rag`), escribe una línea JSON por entrada en `data/golden_dataset/eval_results.jsonl` e imprime resumen (total, con respuesta, errores, latencia, intent). Ver `docs/EVAL_GOLDEN_DATASET.md`.
+
+**Ejemplo de evaluación programática (si se quiere extender):**
+
+```python
+import json
+from src.rag.query_rag import ask_with_router
+
+def run_golden_eval(limit=None):
+    with open("data/golden_dataset/faqs_golden.json", encoding="utf-8") as f:
+        golden = json.load(f)
+    entries = golden.get("entries", [])[:limit] if limit else golden.get("entries", [])
+
+    results = []
+    for entry in entries:
+        chunks, answer, intent = ask_with_router(entry["pregunta"])
+        results.append({
+            "id": entry["id"],
+            "question": entry["pregunta"],
+            "expected": entry["respuesta_esperada"],
+            "actual": answer,
+            "intent": intent,
+            "topic": entry.get("topic"),
+            "correct": None,  # Marcar manualmente o usar evaluador
+            "notes": ""
+        })
+
+    with open("data/golden_dataset/eval_results.json", "w", encoding="utf-8") as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
+    return results
+```
+
+## Métricas de evaluación
+
+- **Accuracy:** ¿La respuesta contiene la info correcta?
+- **No hallucination:** ¿Inventó datos que no están en el RAG?
+- **Tone:** ¿Suena como Subastin (cálido, peruano) o como robot?
+- **Guardrail:** ¿Rechazó correctamente las preguntas fuera de dominio?
+- **Intent routing:** ¿Haiku clasificó correctamente la intención?

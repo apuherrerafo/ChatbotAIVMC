@@ -1,0 +1,15 @@
+# No subir secretos
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Datos crudos (opcional: quitar si quieres versionar)
+# data/raw/
+# data/processed/

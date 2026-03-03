@@ -1,0 +1,156 @@
+---
+description: Regla para la integración con WhatsApp Business API, webhooks, y endpoints de la API del bot.
+globs: ["src/server/", "src/whatsapp/"]
+alwaysApply: false
+---
+
+# VMC-Bot — WhatsApp y API
+
+## Estado actual
+
+- **WhatsApp:** NO conectado aún (pendiente número/eSIM de VMC)
+- **API de prueba:** FastAPI en puerto 8000 con `POST /api/ask` y frontend HTML estático
+- **Conexión WhatsApp:** Semana 2 del roadmap
+
+## API actual (funcional)
+
+- **GET /** → Frontend de prueba (`static/index.html`)
+- **POST /api/ask** → Endpoint principal del bot
+  - **Body:** `{ "message": str, "skip_router": bool (opcional) }`
+  - **Response:** `{ "response": str, "intent": str, "fragments": list }`
+
+## Pipeline del endpoint /api/ask
+
+1. Recibir mensaje
+2. Router Haiku → clasificar intención
+3. Switch por intención:
+   - **"faq"** → Multi-query → Pinecone → RRF → Sonnet → respuesta
+   - **"stock_search"** → Buscar en inventario scrapeado (placeholder)
+   - **"soporte_humano"** → Mensaje de escalamiento con resumen
+   - **"fuera_dominio"** → Rechazo amable dentro del guardrail VMC
+4. Retornar respuesta + metadata
+
+## WhatsApp Business API — Diseño para Semana 2
+
+### Opción A: Meta Cloud API directo ($0/msg)
+
+```python
+# Webhook para recibir mensajes
+@app.post("/webhook/whatsapp")
+async def whatsapp_webhook(request: Request):
+    body = await request.json()
+
+    # Verificar que es un mensaje (no status update)
+    if body.get("entry", [{}])[0].get("changes", [{}])[0].get("value", {}).get("messages"):
+        message = body["entry"][0]["changes"][0]["value"]["messages"][0]
+        phone = message["from"]
+
+        # Texto
+        if message["type"] == "text":
+            user_text = message["text"]["body"]
+        # Audio (Fase 4)
+        elif message["type"] == "audio":
+            audio_id = message["audio"]["id"]
+            # → Descargar audio → Gemini STT → texto
+            user_text = await transcribe_audio(audio_id)
+
+        # Procesar con nuestro pipeline
+        response = await process_message(user_text)
+
+        # Enviar respuesta
+        await send_whatsapp_message(phone, response)
+
+    return {"status": "ok"}
+
+# Verificación del webhook (GET)
+@app.get("/webhook/whatsapp")
+async def verify_webhook(request: Request):
+    mode = request.query_params.get("hub.mode")
+    token = request.query_params.get("hub.verify_token")
+    challenge = request.query_params.get("hub.challenge")
+
+    if mode == "subscribe" and token == os.getenv("WHATSAPP_VERIFY_TOKEN"):
+        return int(challenge)
+    return {"error": "Forbidden"}, 403
+```
+
+### Opción B: Twilio ($0.005/msg ≈ $54/mes)
+
+```python
+from twilio.rest import Client
+
+twilio_client = Client(
+    os.getenv("TWILIO_ACCOUNT_SID"),
+    os.getenv("TWILIO_AUTH_TOKEN")
+)
+
+# Twilio envía POST con form data, no JSON
+@app.post("/webhook/twilio")
+async def twilio_webhook(request: Request):
+    form = await request.form()
+    user_message = form.get("Body", "")
+    from_number = form.get("From", "")  # whatsapp:+51XXXXXXXXX
+
+    response = await process_message(user_message)
+
+    twilio_client.messages.create(
+        body=response,
+        from_=f"whatsapp:{os.getenv('TWILIO_WHATSAPP_NUMBER')}",
+        to=from_number
+    )
+    return {"status": "ok"}
+```
+
+## Reglas para WhatsApp
+
+- **Ventana de 24h:** Si el usuario inicia el chat, tienes 24h para responder GRATIS (service conversation). Después necesitas template aprobado por Meta.
+- **Rate limit por usuario:** Máximo 3 mensajes/minuto por usuario para evitar spam loops.
+- **Respuestas cortas:** WhatsApp trunca mensajes largos. Máximo ~1000 caracteres por mensaje. Si necesitas más, dividir en múltiples mensajes.
+- **Sin markdown pesado:** WhatsApp soporta negrita y cursiva pero no headers, tablas, ni listas complejas.
+- **Latencia < 3 segundos:** Meta puede timeout el webhook. Procesar async si es necesario.
+- **Política Meta 2026:** El bot tiene propósito definido (soporte + inventario). NO responder preguntas fuera de dominio.
+
+## Escalamiento a humano (Semana 5)
+
+```python
+# Cuando intent = "soporte_humano" o el bot falla 2 veces seguidas
+async def escalate_to_human(phone: str, conversation_history: list):
+    """
+    Transferir a agente humano con contexto.
+    Integración con Intercom (Semana 5).
+    """
+    summary = await generate_summary(conversation_history)  # Haiku resume la conversación
+
+    # Enviar a Intercom con metadata del usuario
+    # TODO: Implementar en Semana 5
+
+    # Mensaje al usuario
+    return "Te voy a conectar con un agente de VMC que podrá ayudarte mejor. Le paso el resumen de nuestra conversación para que no tengas que repetir nada. 🙌"
+```
+
+## Manejo de tipos de mensaje WhatsApp
+
+| Tipo | Soporte actual | Soporte futuro |
+|------|----------------|----------------|
+| Texto | ✅ Funcional | ✅ |
+| Audio/voz | ❌ | Semana 4 (Gemini STT) |
+| Imagen | ❌ | Posible: usuario envía foto de vehículo |
+| Documento | ❌ | No planificado |
+| Ubicación | ❌ | Posible: "sede VMC más cercana" |
+| Sticker/GIF | ❌ | Ignorar silenciosamente |
+
+## Logging de conversaciones
+
+```python
+# Cada interacción se loguea para análisis posterior
+conversation_log = {
+    "timestamp": datetime.now().isoformat(),
+    "phone_hash": hash(phone),  # Nunca guardar número real en logs
+    "user_message": user_text,
+    "intent": classified_intent,
+    "chunks_used": [chunk["id"] for chunk in rag_chunks],
+    "bot_response": response_text,
+    "latency_ms": elapsed_time,
+    "model_used": "sonnet" | "haiku",
+}
+```

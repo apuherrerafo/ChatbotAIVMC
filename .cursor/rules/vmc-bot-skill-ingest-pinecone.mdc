@@ -1,0 +1,91 @@
+---
+description: "Skill para ingestar contenido nuevo en Pinecone. Usar cada vez que hay contenido nuevo (infografías extraídas, FAQs nuevas, páginas actualizadas, transcripciones de video)."
+globs: ["src/ingest/**", "src/rag/embed*"]
+alwaysApply: false
+---
+
+# Skill: Ingest de Contenido Nuevo a Pinecone
+
+## Cuándo usar
+
+- Se extrajo texto de nuevas infografías del Centro de Ayuda
+- Se transcribió un video nuevo
+- Se actualizó una página del Centro de Ayuda
+- Se agregaron nuevas FAQs
+- Se obtuvo contenido nuevo de cualquier fuente de VMC
+
+## Pipeline paso a paso
+
+### Paso 1: Preparar contenido raw
+
+Guardar el texto en `data/raw/` con nombre descriptivo:
+
+```
+data/raw/text/[fuente]_[tema].md
+# Ejemplos:
+data/raw/text/infografia_registro.md
+data/raw/text/video_subascoins.md
+```
+
+### Paso 2: Clasificar con taxonomía
+
+```python
+from src.ingest.taxonomy import classify_content
+category = classify_content(raw_text)
+# Categorías: registro, subascoins, comisiones, consignaciones,
+# visitas, subaspass, pagos, riesgo_usuario, calidad_miembro,
+# ganador_directo, general, procesos
+```
+
+### Paso 3: Chunkear semánticamente
+
+```python
+from src.rag.chunks import create_semantic_chunks
+chunks = create_semantic_chunks(
+    text=raw_text,
+    source="helpcenter",  # o "faq", "video", "infografia"
+    category=category,
+    title="Título descriptivo del contenido"
+)
+```
+
+**Reglas:** Por sección temática (no por tamaño). 200-500 tokens por chunk. No cortar oraciones. Incluir título en cada chunk.
+
+### Paso 4: Embeber y subir
+
+```python
+from pinecone import Pinecone
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+index = pc.Index(os.getenv("PINECONE_INDEX_NAME"))
+
+for i, chunk in enumerate(chunks):
+    embedding = pc.inference.embed(
+        model="multilingual-e5-large",
+        inputs=[chunk["text"]],
+        parameters={"input_type": "passage"}  # SIEMPRE "passage" para ingest
+    )
+    index.upsert(vectors=[{
+        "id": f"{chunk['metadata']['source']}_{chunk['metadata']['category']}_{i:03d}",
+        "values": embedding[0].values,
+        "metadata": {**chunk["metadata"], "text": chunk["text"]}
+    }], namespace=chunk["metadata"]["source"])
+```
+
+### Paso 5: Verificar con query de prueba
+
+```python
+test_embedding = pc.inference.embed(
+    model="multilingual-e5-large",
+    inputs=["pregunta relevante al contenido nuevo"],
+    parameters={"input_type": "query"}  # SIEMPRE "query" para búsqueda
+)
+results = index.query(vector=test_embedding[0].values, top_k=3, include_metadata=True)
+```
+
+## Checklist post-ingest
+
+- [ ] Raw guardado en `data/raw/`
+- [ ] Chunks con categoría correcta
+- [ ] Embeddings en Pinecone
+- [ ] Query de prueba exitosa
+- [ ] 2-3 preguntas nuevas en golden dataset

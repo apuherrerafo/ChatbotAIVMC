@@ -1,0 +1,293 @@
+[2026-02-27T18:41:18.929538+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-02-27T18:41:18.929538+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h).
+[2026-02-27T18:41:18.929538+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T18:41:20.537335+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T18:41:20.537335+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T18:45:27.142928+00:00] END refresh_rag_from_helpcenter --verify: returncode=3221225786
+[2026-02-27T18:45:27.143929+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T18:45:27.732272+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h si INVENTORY_URL está configurada).
+[2026-02-27T18:45:27.732272+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-02-27T18:45:27.732272+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T18:45:28.918930+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T18:45:28.918930+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T18:46:19.080083+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T18:46:19.080083+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T18:50:27.729235+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h si INVENTORY_URL está configurada).
+[2026-02-27T18:50:27.729235+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-02-27T18:50:27.730232+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T18:50:29.101440+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T18:50:29.101440+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T18:51:18.348182+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T18:51:18.348182+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T18:55:27.474828+00:00] END eval_golden: returncode=3221225786
+[2026-02-27T18:55:27.474828+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-02-27T18:55:27.508015+00:00] END audit_rag_content: returncode=0
+[2026-02-27T18:55:27.957997+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-02-27T18:55:27.957997+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-02-27T18:55:27.958994+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T18:55:29.257337+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T18:55:29.258394+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T18:56:18.215854+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T18:56:18.216900+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T19:00:27.697291+00:00] END eval_golden: returncode=3221225786
+[2026-02-27T19:00:27.697291+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-02-27T19:00:28.189270+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-02-27T19:00:28.189270+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-02-27T19:00:28.189270+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T19:00:31.294419+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T19:00:31.295419+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T19:01:33.788564+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T19:01:33.788564+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T19:04:08.054086+00:00] END eval_golden: returncode=3221225786
+[2026-02-27T19:04:08.055086+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-02-27T19:04:08.089312+00:00] END audit_rag_content: returncode=0
+[2026-02-27T19:04:08.089312+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-02-27T19:04:08.570462+00:00] Hilo de mantenimiento lanzado en segundo plano.
+refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-02-27T19:04:08.571459+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T19:04:09.712721+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T19:04:09.712721+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T19:05:03.693568+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T19:05:03.694569+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T19:09:08.239586+00:00] END eval_golden: returncode=3221225786
+[2026-02-27T19:09:08.239586+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-02-27T19:09:08.272941+00:00] END audit_rag_content: returncode=0
+[2026-02-27T19:09:08.272941+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-02-27T19:09:08.841651+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-02-27T19:09:08.841651+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-02-27T19:09:08.842647+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T19:09:10.028957+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T19:09:10.028957+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T19:12:17.577805+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T19:12:17.578885+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T19:25:58.534117+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-02-27T19:25:58.534117+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-02-27T19:25:58.534117+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T19:26:00.025817+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T19:26:00.026813+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T19:26:34.121400+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T19:26:34.121400+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T19:30:30.050494+00:00] END eval_golden: returncode=0
+[2026-02-27T19:30:30.051495+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-02-27T19:30:30.091986+00:00] END audit_rag_content: returncode=0
+[2026-02-27T19:30:30.091986+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-02-27T19:30:30.654184+00:00] Hilo de mantenimiento lanzado en segundo plano.
+refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-02-27T19:30:30.654184+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-02-27T19:30:31.861546+00:00] END verify_helpcenter_content: returncode=1
+[2026-02-27T19:30:31.861546+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-02-27T19:31:20.823222+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-02-27T19:31:20.823222+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-02-27T19:33:04.538002+00:00] END eval_golden: returncode=0
+[2026-02-27T19:33:04.538002+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-02-27T19:33:04.587915+00:00] END audit_rag_content: returncode=0
+[2026-02-27T19:33:04.587915+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-02-27T19:33:05.613775+00:00] END crawl_inventory: returncode=1
+[2026-02-27T19:33:05.613775+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-02-27T19:33:05.735901+00:00] END parse_inventory: returncode=0
+[2026-03-02T14:22:39.729760+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-02T14:22:39.729760+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-02T14:22:39.729760+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-02T14:22:43.321295+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-02T14:22:43.321295+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-02T14:23:50.039490+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-02T14:23:50.039490+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-02T14:25:31.413578+00:00] END eval_golden: returncode=0
+[2026-03-02T14:25:31.414578+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-02T14:25:31.457713+00:00] END audit_rag_content: returncode=0
+[2026-03-02T14:25:31.457713+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-02T14:25:32.654625+00:00] END crawl_inventory: returncode=1
+[2026-03-02T14:25:32.654625+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-02T14:25:32.820451+00:00] END parse_inventory: returncode=0
+[2026-03-02T22:26:40.352608+00:00] Hilo de mantenimiento lanzado en segundo plano.
+refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-02T22:26:40.352608+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-02T22:26:43.393548+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-02T22:26:43.393548+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-02T22:26:44.631290+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-02T22:26:44.631290+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-02T22:36:38.105593+00:00] END eval_golden: returncode=3221225786
+[2026-03-02T22:36:38.105593+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-02T22:36:38.680721+00:00] Hilo de mantenimiento lanzado en segundo plano.
+refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-02T22:36:38.680721+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-02T22:36:40.129144+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-02T22:36:40.129144+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-02T22:36:41.269047+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-02T22:36:41.270047+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-02T23:11:13.190493+00:00] END eval_golden: returncode=120
+[2026-03-02T23:11:13.191494+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-02T23:11:13.242253+00:00] END audit_rag_content: returncode=120
+[2026-03-02T23:11:13.242253+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-02T23:11:14.699553+00:00] END crawl_inventory: returncode=120
+[2026-03-02T23:11:14.699553+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-02T23:11:14.782532+00:00] END parse_inventory: returncode=120
+[2026-03-03T19:02:14.337014+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T19:02:14.337014+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T19:02:14.337014+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T19:02:17.604548+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T19:02:17.604548+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T19:02:18.828142+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T19:02:18.829139+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T19:08:08.401397+00:00] END eval_golden: returncode=3221225786
+[2026-03-03T19:08:08.401397+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T19:08:08.442816+00:00] END audit_rag_content: returncode=0
+[2026-03-03T19:08:08.442816+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T19:08:09.769177+00:00] END crawl_inventory: returncode=1
+[2026-03-03T19:08:09.769177+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T19:08:09.848637+00:00] END parse_inventory: returncode=0
+[2026-03-03T19:08:15.674547+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T19:08:15.674547+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T19:08:15.674547+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T19:08:16.923153+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T19:08:16.923153+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T19:08:18.008978+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T19:08:18.009974+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T19:13:47.441909+00:00] END eval_golden: returncode=3221225786
+[2026-03-03T19:13:47.441909+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T19:13:48.315325+00:00] Hilo de mantenimiento lanzado en segundo plano.
+refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T19:13:48.315325+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T19:13:49.617951+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T19:13:49.618948+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T19:13:50.734513+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T19:13:50.734513+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T19:18:48.667788+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T19:18:48.667788+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T19:18:48.668785+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T19:18:49.980615+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T19:18:49.980615+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T19:18:51.220862+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T19:18:51.220862+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T19:21:35.389634+00:00] END eval_golden: returncode=3221225786
+[2026-03-03T19:21:35.389634+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T19:21:36.177357+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T19:21:36.177357+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T19:21:36.178354+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T19:21:37.273121+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T19:21:37.273121+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T19:21:38.371077+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T19:21:38.371077+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T19:48:15.687670+00:00] END eval_golden: returncode=0
+[2026-03-03T19:48:15.688667+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T19:48:15.731899+00:00] END audit_rag_content: returncode=0
+[2026-03-03T19:48:15.732461+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T19:48:17.054511+00:00] END crawl_inventory: returncode=1
+[2026-03-03T19:48:17.055024+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T19:48:17.126783+00:00] END parse_inventory: returncode=0
+[2026-03-03T20:19:53.175323+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T20:19:53.175323+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T20:19:53.175323+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T20:19:54.630353+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T20:19:54.630353+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T20:19:55.695360+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T20:19:55.695360+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T20:22:40.185304+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T20:22:40.185304+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T20:22:40.185304+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T20:22:41.565087+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T20:22:41.565087+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T20:22:42.858625+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T20:22:42.859622+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T20:26:47.965430+00:00] END eval_golden: returncode=3221225786
+[2026-03-03T20:26:47.965430+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T20:26:48.002750+00:00] END audit_rag_content: returncode=0
+[2026-03-03T20:26:48.005285+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T20:26:49.308400+00:00] END crawl_inventory: returncode=1
+[2026-03-03T20:26:49.308400+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T20:26:49.391780+00:00] END parse_inventory: returncode=0
+[2026-03-03T20:26:55.735101+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T20:26:55.735101+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T20:26:55.735101+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T20:26:56.805239+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T20:26:56.805239+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T20:26:57.875363+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T20:26:57.875363+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T20:31:46.277349+00:00] END eval_golden: returncode=0
+[2026-03-03T20:31:46.282727+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T20:31:46.332786+00:00] END audit_rag_content: returncode=0
+[2026-03-03T20:31:46.332786+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T20:31:47.515401+00:00] Hilo de mantenimiento lanzado en segundo plano.
+refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T20:31:47.515401+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T20:31:48.549333+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T20:31:48.550331+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T20:31:50.105718+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T20:31:50.105718+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T20:37:18.584101+00:00] END eval_golden: returncode=0
+[2026-03-03T20:37:18.584101+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T20:37:18.629876+00:00] END audit_rag_content: returncode=0
+[2026-03-03T20:37:18.630984+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T20:37:20.008587+00:00] END crawl_inventory: returncode=1
+[2026-03-03T20:37:20.008587+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T20:37:20.120405+00:00] END parse_inventory: returncode=0
+[2026-03-03T21:38:38.875984+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T21:38:38.875984+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T21:38:38.875984+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T21:38:40.286153+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T21:38:40.286153+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T21:38:41.496021+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T21:38:41.496021+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T21:45:17.603405+00:00] END eval_golden: returncode=0
+[2026-03-03T21:45:17.603405+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T21:45:17.652457+00:00] END audit_rag_content: returncode=0
+[2026-03-03T21:45:17.652457+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T21:45:19.154916+00:00] END crawl_inventory: returncode=1
+[2026-03-03T21:45:19.154916+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T21:45:19.235594+00:00] END parse_inventory: returncode=0
+[2026-03-03T22:12:03.069380+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T22:12:03.069380+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T22:12:03.069380+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T22:12:04.413332+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T22:12:04.414332+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T22:12:05.558098+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T22:12:05.558098+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T22:12:05.613302+00:00] END eval_golden: returncode=1
+[2026-03-03T22:12:05.614298+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T22:12:05.646143+00:00] END audit_rag_content: returncode=0
+[2026-03-03T22:12:05.646143+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T22:12:06.672987+00:00] END crawl_inventory: returncode=1
+[2026-03-03T22:12:06.672987+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T22:12:06.741083+00:00] END parse_inventory: returncode=0
+[2026-03-03T22:17:03.272061+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T22:17:03.272061+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T22:17:03.273057+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T22:17:04.530133+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T22:17:04.531035+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T22:17:05.633531+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T22:17:05.633531+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T22:17:05.686357+00:00] END eval_golden: returncode=1
+[2026-03-03T22:17:05.686357+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T22:17:05.720244+00:00] END audit_rag_content: returncode=0
+[2026-03-03T22:17:05.721240+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T22:17:06.789949+00:00] END crawl_inventory: returncode=1
+[2026-03-03T22:17:06.790945+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T22:17:06.860251+00:00] END parse_inventory: returncode=0
+[2026-03-03T22:53:10.768342+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T22:53:10.768342+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T22:53:10.768342+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T22:53:12.196150+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T22:53:12.196150+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T22:53:13.348074+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T22:53:13.348074+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T22:53:13.409297+00:00] END eval_golden: returncode=1
+[2026-03-03T22:53:13.410294+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T22:53:13.443840+00:00] END audit_rag_content: returncode=0
+[2026-03-03T22:53:13.443840+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T22:53:14.673649+00:00] END crawl_inventory: returncode=1
+[2026-03-03T22:53:14.673649+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T22:53:14.768878+00:00] END parse_inventory: returncode=0
+[2026-03-03T22:53:20.313828+00:00] Loop de mantenimiento iniciado (verify cada 24h, refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T22:53:20.313828+00:00] Hilo de mantenimiento lanzado en segundo plano.
+[2026-03-03T22:53:20.313828+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T22:53:21.383528+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T22:53:21.383528+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T22:53:22.596130+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T22:53:22.596130+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T22:53:22.669014+00:00] END eval_golden: returncode=1
+[2026-03-03T22:53:22.669014+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T22:53:22.710670+00:00] END audit_rag_content: returncode=0
+[2026-03-03T22:53:22.710670+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T22:53:23.867454+00:00] END crawl_inventory: returncode=1
+[2026-03-03T22:53:23.868456+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T22:53:23.939036+00:00] END parse_inventory: returncode=0

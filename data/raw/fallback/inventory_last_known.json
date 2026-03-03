@@ -1,0 +1,384 @@
+{
+  "vehiculos": [
+    {
+      "id": "60461",
+      "titulo": "Jac JS8",
+      "año": "2025",
+      "precio": "US$ 10,999",
+      "url": "https://www.vmcsubastas.com/oferta/60461",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60461/s_699f66857a2a6.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60459",
+      "titulo": "GAC GS8",
+      "año": "2024",
+      "precio": "US$ 18,999",
+      "url": "https://www.vmcsubastas.com/oferta/60459",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60459/s_699f64c9bb072.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60465",
+      "titulo": "Jac JS8",
+      "año": "2024",
+      "precio": "US$ 10,399",
+      "url": "https://www.vmcsubastas.com/oferta/60465",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60465/s_699f6908a3a19.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60466",
+      "titulo": "GAC GS3",
+      "año": "2024",
+      "precio": "US$ 7,999",
+      "url": "https://www.vmcsubastas.com/oferta/60466",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60466/s_699f862e11fa4.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60415",
+      "titulo": "Sinotruk ZZ4257N3847N1CB",
+      "año": "2013",
+      "precio": "US$ 3,499",
+      "url": "https://www.vmcsubastas.com/oferta/60415",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60415/s_6998ddce001b1.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60411",
+      "titulo": "Sinotruk ZZ4257N3847N1CB",
+      "año": "2013",
+      "precio": "US$ 1,799",
+      "url": "https://www.vmcsubastas.com/oferta/60411",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60411/s_6998dd540e09d.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60409",
+      "titulo": "Sinotruk ZZ4257N3847N1CB",
+      "año": "2013",
+      "precio": "US$ 3,499",
+      "url": "https://www.vmcsubastas.com/oferta/60409",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60409/s_6998dd0f0c179.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60407",
+      "titulo": "International 7600 SBA",
+      "año": "2011",
+      "precio": "US$ 6,999",
+      "url": "https://www.vmcsubastas.com/oferta/60407",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60407/s_6998dcde92034.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60254",
+      "titulo": "Citroen Berlingo",
+      "año": "2024",
+      "precio": "US$ 6,999",
+      "url": "https://www.vmcsubastas.com/oferta/60254",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60254/s_695bff0d3cfa1.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60397",
+      "titulo": "Citroen Berlingo",
+      "año": "2024",
+      "precio": "US$ 6,999",
+      "url": "https://www.vmcsubastas.com/oferta/60397",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60397/s_699e13b342308.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60284",
+      "titulo": "Citroen Berlingo",
+      "año": "2024",
+      "precio": "US$ 6,999",
+      "url": "https://www.vmcsubastas.com/oferta/60284",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60284/s_696e7d7e52aa8.png",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60287",
+      "titulo": "Balanza TSCALE NSW 500KG",
+      "año": "2022",
+      "precio": "",
+      "url": "https://www.vmcsubastas.com/oferta/60287",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60287/s_697b98ebc4d3d.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60286",
+      "titulo": "Brea líquida RC-250",
+      "año": "",
+      "precio": "",
+      "url": "https://www.vmcsubastas.com/oferta/60286",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60286/s_6977938545fa2.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60285",
+      "titulo": "Artículos diversos operativos",
+      "año": "",
+      "precio": "",
+      "url": "https://www.vmcsubastas.com/oferta/60285",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60285/s_6977864f2708e.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60530",
+      "titulo": "Equipos de computo en desuso",
+      "año": "",
+      "precio": "",
+      "url": "https://www.vmcsubastas.com/oferta/60530",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60530/s_69a7133612f39.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60473",
+      "titulo": "Laptops HP",
+      "año": "",
+      "precio": "US$ 179",
+      "url": "https://www.vmcsubastas.com/oferta/60473",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60473/s_69a5c38770567.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60474",
+      "titulo": "Artículos y Equipos Varios",
+      "año": "",
+      "precio": "US$ 199",
+      "url": "https://www.vmcsubastas.com/oferta/60474",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60474/s_69a5cd8e2cbe2.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60487",
+      "titulo": "Lote de Monitores",
+      "año": "",
+      "precio": "US$ 399",
+      "url": "https://www.vmcsubastas.com/oferta/60487",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60487/s_69a6f7c4334ec.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60472",
+      "titulo": "Teléfono IP Cisco CP-7821-K9",
+      "año": "",
+      "precio": "US$ 199",
+      "url": "https://www.vmcsubastas.com/oferta/60472",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60472/s_69a5af0bd2fe9.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60482",
+      "titulo": "Volkswagen Gol",
+      "año": "2005",
+      "precio": "US$ 399",
+      "url": "https://www.vmcsubastas.com/oferta/60482",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60482/s_69a61833b5670.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60483",
+      "titulo": "Toyota Hilux",
+      "año": "2024",
+      "precio": "US$ 4,999",
+      "url": "https://www.vmcsubastas.com/oferta/60483",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60483/s_69a618f2b24fa.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60484",
+      "titulo": "MG RX5",
+      "año": "2020",
+      "precio": "US$ 3,499",
+      "url": "https://www.vmcsubastas.com/oferta/60484",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60484/s_69a619a6de98e.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60485",
+      "titulo": "Suzuki Swift",
+      "año": "2012",
+      "precio": "US$ 999",
+      "url": "https://www.vmcsubastas.com/oferta/60485",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60485/s_69a61b291b6b3.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60522",
+      "titulo": "Chevrolet ONIX JOY",
+      "año": "2023",
+      "precio": "US$ 4,999",
+      "url": "https://www.vmcsubastas.com/oferta/60522",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60522/s_69988f794d3a8.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60525",
+      "titulo": "Chery Tiggo 2 PRO",
+      "año": "2023",
+      "precio": "US$ 7,999",
+      "url": "https://www.vmcsubastas.com/oferta/60525",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60525/s_69630af6834b0.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60528",
+      "titulo": "Chevrolet Captiva",
+      "año": "2022",
+      "precio": "US$ 8,999",
+      "url": "https://www.vmcsubastas.com/oferta/60528",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60528/s_69a71a7c83db9.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60529",
+      "titulo": "Jetour X70",
+      "año": "2022",
+      "precio": "US$ 8,999",
+      "url": "https://www.vmcsubastas.com/oferta/60529",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60529/s_69a719e80b588.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/"
+    },
+    {
+      "id": "60413",
+      "titulo": "Mitsubishi L200",
+      "año": "2014",
+      "precio": "US$ 2,499",
+      "url": "https://www.vmcsubastas.com/oferta/60413",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60413/s_6998dd8c86817.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60405",
+      "titulo": "Sinotruk ZZ4187M3817Q1CB",
+      "año": "2014",
+      "precio": "US$ 1,799",
+      "url": "https://www.vmcsubastas.com/oferta/60405",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60405/s_6998dcae915c3.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60406",
+      "titulo": "Scania LA6X4",
+      "año": "2005",
+      "precio": "US$ 2,299",
+      "url": "https://www.vmcsubastas.com/oferta/60406",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60406/s_6998dcc9969bb.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60410",
+      "titulo": "Sinotruk ZZ4257N3847N1CB",
+      "año": "2013",
+      "precio": "US$ 1,799",
+      "url": "https://www.vmcsubastas.com/oferta/60410",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60410/s_6998dd2980d62.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60412",
+      "titulo": "Sinotruk ZZ4257N3847N1CB",
+      "año": "2013",
+      "precio": "US$ 1,799",
+      "url": "https://www.vmcsubastas.com/oferta/60412",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60412/s_6998dd723779f.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60414",
+      "titulo": "Mitsubishi L200",
+      "año": "2014",
+      "precio": "US$ 2,499",
+      "url": "https://www.vmcsubastas.com/oferta/60414",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60414/s_6998ddacdc804.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60417",
+      "titulo": "Mitsubishi L200",
+      "año": "2016",
+      "precio": "US$ 2,499",
+      "url": "https://www.vmcsubastas.com/oferta/60417",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60417/s_6998de0c1ccce.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60419",
+      "titulo": "Mitsubishi L200",
+      "año": "2016",
+      "precio": "US$ 2,499",
+      "url": "https://www.vmcsubastas.com/oferta/60419",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60419/s_6998de45508af.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60420",
+      "titulo": "International 7600",
+      "año": "2011",
+      "precio": "US$ 6,999",
+      "url": "https://www.vmcsubastas.com/oferta/60420",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60420/s_6998de62470ec.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60422",
+      "titulo": "International 7600",
+      "año": "2011",
+      "precio": "US$ 6,999",
+      "url": "https://www.vmcsubastas.com/oferta/60422",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60422/s_6998de9cc25cf.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60423",
+      "titulo": "International 7600",
+      "año": "2011",
+      "precio": "US$ 6,999",
+      "url": "https://www.vmcsubastas.com/oferta/60423",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60423/s_6998dc8c7ab41.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60418",
+      "titulo": "Mitsubishi L200",
+      "año": "2019",
+      "precio": "US$ 3,499",
+      "url": "https://www.vmcsubastas.com/oferta/60418",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60418/s_6998de268b39b.jpg",
+      "fuente_url": "https://www.vmcsubastas.com/maersk.html"
+    },
+    {
+      "id": "60400",
+      "titulo": "Chevrolet Suburban",
+      "año": "2006",
+      "precio": "US$ 4,599",
+      "url": "https://www.vmcsubastas.com/oferta/60400",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60400/s_699e1e19dde28.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/subastop.html"
+    },
+    {
+      "id": "60404",
+      "titulo": "Mercedes Benz LA-1113-36",
+      "año": "1976",
+      "precio": "",
+      "url": "https://www.vmcsubastas.com/oferta/60404",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60404/s_699f483f7eb79.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/cvcenergia.html"
+    },
+    {
+      "id": "60491",
+      "titulo": "Mazda Mazda 3",
+      "año": "2017",
+      "precio": "US$ 2,999",
+      "url": "https://www.vmcsubastas.com/oferta/60491",
+      "imagen_url": "https://cdn.vmcsubastas.com/images/auction/60491/s_699f3fd5cac15.jpeg",
+      "fuente_url": "https://www.vmcsubastas.com/santander.html"
+    }
+  ],
+  "scraped_at": "2026-03-03T20:19:19.335071+00:00",
+  "fuente": "playwright"
+}

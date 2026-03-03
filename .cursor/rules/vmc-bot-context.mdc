@@ -1,0 +1,18 @@
+
+---
+description: Contexto y convenciones del proyecto VMC-Bot (chatbot WhatsApp para VMC Subastas)
+alwaysApply: true
+---
+
+# VMC-Bot — Contexto para el asistente
+
+- **Proyecto:** No es solo un chatbot: es un sistema de inteligencia de demanda con interfaz conversacional (Strategic Brief v2). Chatbot para VMC Subastas por WhatsApp; desarrollo 100% AI-driven con Cursor + MCPs. Visión en 3 fases: Build Trust (S1–6) → Monetize Attention (S7–14, co-piloto subasta en vivo) → Flip the Model (ongoing, datos → señales de demanda).
+- **Stack:** Claude Sonnet/Haiku, Pinecone (embeddings + vector DB), Firecrawl (scraping), FastAPI, WhatsApp Business API.
+- **Idioma:** Español peruano ("carro", "jalar"). Comentarios en español; nombres descriptivos.
+- **RAG primero:** La calidad de datos para el RAG es el factor #1 de éxito. Chunks semánticos por tema/pregunta, no por tamaño.
+- **Guardrail financiero:** Precios, comisiones y plazos NUNCA los inventa el LLM; siempre vienen del RAG o de datos scrapeados/JSON.
+- **Dominio:** El bot solo responde sobre VMC Subastas; nada fuera de dominio (restricción Meta 2026).
+- **Estructura:** Ver `docs/ESTRUCTURA_PROYECTO.md`. Código modular en `src/ingest`, `src/rag`, `src/server`. Decisiones en `docs/DECISIONS.md`.
+- **Documentos de referencia:** `docs/PROJECT_CONTEXT.md` (contexto completo), `docs/VMC_Bot_Roadmap_AI_Driven_v2.md` (6 semanas, stack, costos), `docs/VMC_Bot_Strategic_Brief_v2.md` (3 fases, visión demanda, SEO, prerequisitos), `docs/EXTRACCION_CENTRO_AYUDA.md` (estrategia Centro de Ayuda con imágenes).
+
+Cuando tomes decisiones técnicas, explica opciones y pros/contras. Si algo no es posible o tiene riesgo, dilo directo.

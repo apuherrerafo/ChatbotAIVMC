@@ -1,0 +1,144 @@
+---
+description: "Skill para extraer texto de las infografías del Centro de Ayuda de VMC. Pipeline: descargar imagen → Claude Vision → texto estructurado → chunkear → embeber."
+globs: ["src/ingest/**", "data/raw/**"]
+alwaysApply: false
+---
+
+# Skill: Extracción de Texto de Infografías
+
+## Contexto
+
+~95% del contenido del Centro de Ayuda (ayuda.vmcsubastas.com) está en infografías/imágenes. Estas contienen información crítica sobre procesos, comisiones, pasos de registro, etc. Necesitamos extraer ese texto para alimentar el RAG.
+
+## Pipeline paso a paso
+
+### Paso 1: Identificar infografías pendientes
+
+Consultar el mapa de contenido en `data/raw/helpcenter_crawl/` para ver qué artículos tienen imágenes sin extraer.
+
+```python
+# Estructura esperada del mapa de contenido
+content_map = {
+    "registro": {"url": "...", "images": ["img1.png", "img2.png"], "extracted": False},
+    "subascoins": {"url": "...", "images": ["img3.png"], "extracted": False},
+    # ...
+}
+```
+
+### Paso 2: Descargar imágenes
+
+```python
+import httpx
+
+async def download_image(url: str, save_path: str) -> str:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
+        with open(save_path, "wb") as f:
+            f.write(response.content)
+    return save_path
+```
+
+Guardar en: `data/raw/images/[categoria]_[numero].png`
+
+### Paso 3: Extraer texto con Claude Vision
+
+```python
+import anthropic
+import base64
+
+client = anthropic.Anthropic()
+
+def extract_text_from_infographic(image_path: str, category: str) -> str:
+    with open(image_path, "rb") as f:
+        image_data = base64.standard_b64encode(f.read()).decode("utf-8")
+
+    # Detectar tipo de imagen
+    media_type = "image/png" if image_path.endswith(".png") else "image/jpeg"
+
+    response = client.messages.create(
+        model="claude-sonnet-4-5-20250514",
+        max_tokens=2000,
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": media_type,
+                        "data": image_data
+                    }
+                },
+                {
+                    "type": "text",
+                    "text": f"""Extrae TODO el texto visible en esta infografía del Centro de Ayuda de VMC Subastas.
+
+Categoría: {category}
+
+Instrucciones:
+1. Extrae cada título, subtítulo, párrafo, lista, número y dato visible
+2. Mantén la estructura jerárquica (títulos > subtítulos > contenido)
+3. Si hay pasos numerados, mantén el orden
+4. Si hay datos numéricos (porcentajes, precios, plazos), extráelos EXACTAMENTE como aparecen
+5. Si hay texto pequeño o disclaimers, inclúyelos también
+6. Usa formato markdown para estructurar el output
+7. NO interpretes ni resumas — extrae textualmente lo que dice la imagen
+8. Si hay partes ilegibles, indica [ilegible] en esa sección"""
+                }
+            ]
+        }]
+    )
+
+    return response.content[0].text
+```
+
+### Paso 4: Revisar y limpiar
+
+```python
+def clean_extracted_text(raw_text: str, category: str) -> str:
+    """
+    Revisar el texto extraído:
+    - Eliminar artefactos de OCR
+    - Verificar que los números son correctos
+    - Asegurar estructura markdown limpia
+    """
+    # Guardar raw para referencia
+    # Limpiar duplicados, espacios extra, etc.
+    # NUNCA modificar datos numéricos — si hay duda, marcar para revisión humana
+    cleaned = raw_text.strip()
+    return cleaned
+```
+
+Guardar resultado en: `data/raw/text/infografia_[categoria].md`
+
+### Paso 5: Chunkear y embeber
+
+Usar el Skill de Ingest a Pinecone (`vmc-bot-skill-ingest-pinecone.mdc`) con:
+
+- `source="infografia"`
+- `category=` la categoría correspondiente
+
+## Orden de extracción (por prioridad de negocio)
+
+1. **Registro** — Lo más preguntado por usuarios nuevos
+2. **SubasCoins** — Confusión frecuente
+3. **Comisiones y pagos** — Datos financieros críticos
+4. **Proceso de subasta** — Core del negocio
+5. **Consignaciones** — Segundo flujo de negocio
+6. **Visitas e inspecciones** — Pre-compra
+7. **Resto de categorías**
+
+## Validación
+
+Después de extraer cada infografía:
+
+- [ ] Comparar visualmente el texto extraído con la imagen original
+- [ ] Verificar que TODOS los números coinciden exactamente
+- [ ] Verificar que no falta contenido
+- [ ] Si hay [ilegible], intentar con otra resolución o marcar para revisión manual
+
+## Consideraciones de costo
+
+- Claude Vision (Sonnet): ~$3/M input tokens por imagen
+- Una infografía típica: ~1000-2000 tokens de input (imagen) + ~500-1000 output
+- Costo estimado por 26 artículos: ~$1-3 total (una sola vez)

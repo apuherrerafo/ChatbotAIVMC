@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VMC-Bot — Debug Local</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg-dark: #0d1117;
+      --bg-panel: #161b22;
+      --bg-bubble-user: #005c4b;
+      --bg-bubble-bot: #202c33;
+      --accent-router: #8b5cf6;
+      --accent-multiquery: #3b82f6;
+      --accent-retrieval: #22c55e;
+      --accent-generation: #f97316;
+      --accent-cost: #eab308;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .topbar .logo { font-weight: 700; font-size: 1.25rem; color: var(--text); }
+    .topbar .badge {
+      background: var(--accent-router);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .topbar .cost {
+      font-family: ui-monospace, monospace;
+      font-size: 0.9rem;
+      color: var(--accent-cost);
+    }
+    .topbar .spacer { flex: 1; }
+    .topbar button {
+      padding: 8px 16px;
+      background: var(--border);
+      color: var(--text);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .topbar button:hover { background: #484f58; }
+    .main { display: flex; flex: 1; min-height: 0; }
+    .chat-panel {
+      width: 40%;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: #0b141a;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chat-msg {
+      max-width: 85%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .chat-msg.user {
+      align-self: flex-end;
+      background: var(--bg-bubble-user);
+      color: #e9edef;
+      border-top-right-radius: 2px;
+    }
+    .chat-msg.bot {
+      align-self: flex-start;
+      background: var(--bg-bubble-bot);
+      color: var(--text);
+      border-top-left-radius: 2px;
+    }
+    .chat-msg .time { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+    .chat-msg b, .chat-msg strong { font-weight: 700; }
+    .chat-msg .chat-link, .content .chat-link, .collapsible-body .chat-link {
+      color: #53bdeb;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(83,187,235,0.5);
+    }
+    .chat-msg .chat-link:hover, .content .chat-link:hover, .collapsible-body .chat-link:hover {
+      text-decoration: underline;
+    }
+    .typing {
+      align-self: flex-start;
+      padding: 12px 16px;
+      background: var(--bg-bubble-bot);
+      border-radius: 8px;
+      border-top-left-radius: 2px;
+    }
+    .typing span {
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: dot 1.4s infinite both;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+    .chat-input-row {
+      padding: 12px 16px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .chat-input-row textarea {
+      flex: 1;
+      min-height: 44px;
+      max-height: 120px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: none;
+    }
+    .chat-input-row textarea:focus { outline: none; border-color: var(--accent-multiquery); }
+    .chat-input-row button {
+      padding: 10px 20px;
+      background: var(--bg-bubble-user);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .chat-input-row button:hover { filter: brightness(1.1); }
+    .chat-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .debug-panel { width: 60%; overflow-y: auto; padding: 16px; background: var(--bg-dark); }
+    .debug-entry {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .debug-section { border-bottom: 1px solid var(--border); }
+    .debug-section:last-child { border-bottom: none; }
+    .debug-section summary {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .debug-section summary::-webkit-details-marker { display: none; }
+    .debug-section summary::after { content: "\25BC"; font-size: 0.7rem; margin-left: auto; opacity: 0.7; }
+    .debug-section[open] summary::after { content: "\25B2"; }
+    .debug-section .content { padding: 12px 16px 16px; font-size: 0.85rem; color: var(--text-muted); }
+    .debug-section .content .mono { font-family: ui-monospace, monospace; font-size: 0.8rem; color: var(--text); }
+    .debug-section.router summary { color: var(--accent-router); }
+    .debug-section.multiquery summary { color: var(--accent-multiquery); }
+    .debug-section.retrieval summary { color: var(--accent-retrieval); }
+    .debug-section.generation summary { color: var(--accent-generation); }
+    .debug-section.cost summary { color: var(--accent-cost); }
+    .debug-section.timeline summary { color: var(--text-muted); }
+    .intent-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .intent-faq { background: #22c55e33; color: #22c55e; }
+    .intent-stock_search { background: #3b82f633; color: #3b82f6; }
+    .intent-soporte_humano { background: #f9731633; color: #f97316; }
+    .intent-fuera_dominio { background: #8b5cf633; color: #8b5cf6; }
+    .timeline-bar { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+    .timeline-bar span { display: block; min-width: 4px; }
+    .timeline-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; color: var(--text-muted); }
+    .timeline-legend span { display: flex; align-items: center; gap: 4px; }
+    .timeline-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+    .collapsible-body {
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.75rem;
+      margin-top: 8px;
+      padding: 8px;
+      background: var(--bg-dark);
+      border-radius: 4px;
+    }
+    .debug-placeholder { color: var(--text-muted); text-align: center; padding: 48px 24px; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="logo">VMC-BOT</span>
+    <span class="badge">DEBUG MODE</span>
+    <span class="cost" id="sessionCost">Saldo: cargando...</span>
+    <span class="spacer"></span>
+    <button type="button" id="btnClear">Limpiar chat</button>
+  </header>
+  <div class="main">
+    <aside class="chat-panel">
+      <div class="chat-messages" id="chatMessages">
+        <div id="chatPlaceholder" style="color:var(--text-muted);text-align:center;margin:auto;font-size:0.95rem;">
+          Escribe un mensaje para comenzar...
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="inputMsg" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+        <button type="button" id="btnSend">Enviar</button>
+      </div>
+    </aside>
+    <main class="debug-panel" id="debugPanel">
+      <div class="debug-placeholder" id="debugPlaceholder">
+        Envia un mensaje para ver el detalle del router, multi-query, retrieval, generacion y costos.
+      </div>
+      <div id="debugEntries"></div>
+    </main>
+  </div>
+
+  <script>
+  (function() {
+    var chatMessages = document.getElementById('chatMessages');
+    var inputMsg     = document.getElementById('inputMsg');
+    var btnSend      = document.getElementById('btnSend');
+    var btnClear     = document.getElementById('btnClear');
+    var sessionCostEl  = document.getElementById('sessionCost');
+    var debugPanel     = document.getElementById('debugPanel');
+    var debugPlaceholder = document.getElementById('debugPlaceholder');
+    var debugEntries   = document.getElementById('debugEntries');
+
+    var sending   = false;
+    var sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+
+    // -----------------------------------------------------------------------
+    // Saldo: se carga desde el backend y se actualiza con cada respuesta.
+    // Ya no se calcula en el frontend con un valor fijo.
+    // -----------------------------------------------------------------------
+    function updateBalanceDisplay(balance) {
+      if (balance == null) {
+        sessionCostEl.textContent = 'Saldo: --';
+        return;
+      }
+      sessionCostEl.textContent = 'Saldo: $' + parseFloat(balance).toFixed(6);
+      sessionCostEl.style.color = balance <= 0 ? '#ef4444' : 'var(--accent-cost)';
+    }
+
+    // Cargar saldo al iniciar la página
+    fetch('/api/balance')
+      .then(function(r) { return r.json(); })
+      .then(function(data) { updateBalanceDisplay(data.balance_usd); })
+      .catch(function() { sessionCostEl.textContent = 'Saldo: error'; });
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+    function esc(s) {
+      if (!s) return '';
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function formatLikeWhatsApp(safeHtml) {
+      if (!safeHtml) return '';
+      var s = String(safeHtml);
+      s = s.replace(/\*\*\s*([^*]*?)\s*\*\*/g, '<b>$1</b>');
+      s = s.replace(/\*\s*([^*]*?)\s*\*/g, '<b>$1</b>');
+      s = s.replace(/_\s*([^_]*?)\s*_/g, '<i>$1</i>');
+      s = s.replace(/~\s*([^~]*?)\s*~/g, '<s>$1</s>');
+      return s;
+    }
+
+    function linkify(safeHtml) {
+      if (!safeHtml) return '';
+      var s = String(safeHtml);
+      s = s.replace(/(https?:\/\/[^\s<>]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+      s = s.replace(/(www\.[^\s<>]+)/g, '<a href="https://$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+      s = s.replace(/\b(vmcsubastas\.com(?:\/[^\s<>]*)?)\b/gi, '<a href="https://$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+      s = s.replace(/\b(ayuda\.vmcsubastas\.com(?:\/[^\s<>]*)?)\b/gi, '<a href="https://$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+      return s;
+    }
+
+    function now() {
+      return new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function addMsg(role, text) {
+      var ph = document.getElementById('chatPlaceholder');
+      if (ph) ph.remove();
+      var div = document.createElement('div');
+      div.className = 'chat-msg ' + role;
+      div.innerHTML = linkify(formatLikeWhatsApp(esc(text))) + '<div class="time">' + now() + '</div>';
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTyping() {
+      hideTyping();
+      var div = document.createElement('div');
+      div.className = 'typing';
+      div.id = 'typingIndicator';
+      div.innerHTML = '<span></span><span></span><span></span>';
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideTyping() {
+      var el = document.getElementById('typingIndicator');
+      if (el) el.remove();
+    }
+
+    function buildDebug(d) {
+      debugPlaceholder.style.display = 'none';
+      var entry = document.createElement('div');
+      entry.className = 'debug-entry';
+      var intent  = d.intent || 'faq';
+      var cost    = d.cost || {};
+      var totalMs = d.total_latency_ms || 0;
+      var it  = d.intent_tokens || {};
+      var mq  = d.multi_query_tokens || {};
+      var ret = d.retrieval || {};
+      var gen = d.generation || {};
+      var gt  = gen.tokens || {};
+      var br  = (cost.breakdown) || {};
+      var h = '';
+
+      // 1. Router
+      h += '<details class="debug-section router" open><summary>🧭 Router (Intencion)</summary><div class="content">';
+      h += 'Intencion: <span class="intent-badge intent-' + intent + '">' + intent + '</span><br>';
+      h += 'Modelo: Haiku 4.5<br>';
+      h += 'Tokens: input <span class="mono">' + (it.input||0) + '</span> / output <span class="mono">' + (it.output||0) + '</span><br>';
+      h += 'Latencia: <span class="mono">' + (d.intent_latency_ms||0) + ' ms</span><br>';
+      h += '<em>' + esc(d.intent_explanation||'') + '</em>';
+      h += '</div></details>';
+
+      // 2. Multi-Query
+      h += '<details class="debug-section multiquery"><summary>🔀 Multi-Query</summary><div class="content">';
+      if (d.multi_queries && d.multi_queries.length) {
+        h += '<ul style="margin:0;padding-left:20px">';
+        for (var qi = 0; qi < d.multi_queries.length; qi++) {
+          h += '<li>' + esc(d.multi_queries[qi]) + '</li>';
+        }
+        h += '</ul>';
+        h += 'Tokens: input <span class="mono">' + (mq.input||0) + '</span> / output <span class="mono">' + (mq.output||0) + '</span><br>';
+        h += 'Latencia: <span class="mono">' + (d.multi_query_latency_ms||0) + ' ms</span><br>';
+        h += '<em>Variaciones para sinonimos peruanos y mejor retrieval.</em>';
+      } else {
+        h += '<em>Omitido — no aplica para esta intencion.</em>';
+      }
+      h += '</div></details>';
+
+      // 3. Retrieval
+      h += '<details class="debug-section retrieval"><summary>📚 Retrieval (Pinecone)</summary><div class="content">';
+      if (ret.queries && ret.queries.length) {
+        var qList = [];
+        for (var ri = 0; ri < ret.queries.length; ri++) qList.push(esc(ret.queries[ri]));
+        h += 'Queries enviadas: <span class="mono">' + qList.join(' | ') + '</span><br>';
+      }
+      h += 'RRF aplicado: ' + (ret.rrf_applied ? 'Si' : 'No') + ' · Latencia: <span class="mono">' + (ret.retrieval_latency_ms||0) + ' ms</span><br>';
+      if (ret.chunks && ret.chunks.length) {
+        for (var ci = 0; ci < ret.chunks.length; ci++) {
+          var c = ret.chunks[ci];
+          h += '<div style="margin-top:8px">#' + (ci+1) + ' <span class="mono">' + esc(c.id||'') + '</span> score=' + (c.score!=null?c.score:'-') + ' · ' + esc((c.category||'') + ' — ' + (c.text_preview||'')) + '</div>';
+        }
+      } else {
+        h += '<strong style="color:var(--accent-generation)">No se encontraron chunks relevantes.</strong>';
+      }
+      h += '</div></details>';
+
+      // 4. Generation
+      h += '<details class="debug-section generation"><summary>✨ Generacion (Sonnet)</summary><div class="content">';
+      if (gen.model) {
+        h += 'Modelo: <span class="mono">' + esc(gen.model) + '</span><br>';
+        h += 'Tokens: input <span class="mono">' + (gt.input||0) + '</span> / output <span class="mono">' + (gt.output||0) + '</span>';
+        if (gen.cached_tokens) h += ' · cacheados <span class="mono">' + gen.cached_tokens + '</span>';
+        h += '<br>Latencia: <span class="mono">' + (gen.latency_ms||0) + ' ms</span><br>';
+        if (gen.system_prompt) {
+          var sp = gen.system_prompt;
+          h += '<details><summary>System prompt (expandir)</summary><div class="collapsible-body">' + esc(sp.length > 3000 ? sp.slice(0,3000) + '...' : sp) + '</div></details>';
+        }
+        if (gen.rag_context) {
+          var rc = gen.rag_context;
+          h += '<details><summary>Contexto RAG (expandir)</summary><div class="collapsible-body">' + esc(rc.length > 2000 ? rc.slice(0,2000) + '...' : rc) + '</div></details>';
+        }
+        if (gen.response_text) {
+          h += '<div style="margin-top:8px"><strong>Respuesta:</strong><div class="collapsible-body">' + linkify(formatLikeWhatsApp(esc(gen.response_text))) + '</div></div>';
+        }
+      } else {
+        h += '<em>No aplica (mensaje no FAQ).</em>';
+      }
+      h += '</div></details>';
+
+      // 5. Cost
+      h += '<details class="debug-section cost" open><summary>💰 Costo estimado</summary><div class="content">';
+      h += 'Haiku router: <span class="mono">$' + (br.haiku_router != null ? br.haiku_router.toFixed(6) : '0') + '</span><br>';
+      h += 'Haiku multi-query: <span class="mono">$' + (br.haiku_multiquery != null ? br.haiku_multiquery.toFixed(6) : '0') + '</span><br>';
+      h += 'Sonnet input: <span class="mono">$' + (br.sonnet_input != null ? br.sonnet_input.toFixed(6) : '0') + '</span><br>';
+      h += 'Sonnet output: <span class="mono">$' + (br.sonnet_output != null ? br.sonnet_output.toFixed(6) : '0') + '</span><br>';
+      h += '<strong>Total mensaje: <span class="mono">$' + (cost.this_message != null ? cost.this_message.toFixed(6) : '0') + '</span></strong>';
+      h += '</div></details>';
+
+      // 6. Timeline
+      var routerMs = d.intent_latency_ms || 0;
+      var mqMs     = d.multi_query_latency_ms || 0;
+      var retMs    = ret.retrieval_latency_ms || 0;
+      var genMs    = gen.latency_ms || 0;
+      var otherMs  = Math.max(0, totalMs - routerMs - mqMs - retMs - genMs);
+      var tot = totalMs || 1;
+      h += '<details class="debug-section timeline"><summary>⏱ Timeline</summary><div class="content">';
+      h += '<div class="timeline-bar">';
+      h += '<span style="width:' + (routerMs/tot*100) + '%;background:var(--accent-router)" title="Router"></span>';
+      h += '<span style="width:' + (mqMs/tot*100) + '%;background:var(--accent-multiquery)" title="Multi-query"></span>';
+      h += '<span style="width:' + (retMs/tot*100) + '%;background:var(--accent-retrieval)" title="Retrieval"></span>';
+      h += '<span style="width:' + (genMs/tot*100) + '%;background:var(--accent-generation)" title="Generacion"></span>';
+      h += '<span style="width:' + (otherMs/tot*100) + '%;background:var(--border)" title="Otros"></span>';
+      h += '</div><div class="timeline-legend">';
+      h += '<span><i style="background:var(--accent-router)"></i> Router ' + routerMs + ' ms</span>';
+      h += '<span><i style="background:var(--accent-multiquery)"></i> Multi-query ' + mqMs + ' ms</span>';
+      h += '<span><i style="background:var(--accent-retrieval)"></i> Pinecone ' + retMs + ' ms</span>';
+      h += '<span><i style="background:var(--accent-generation)"></i> Sonnet ' + genMs + ' ms</span>';
+      h += '<span><i style="background:var(--border)"></i> Total ' + totalMs + ' ms</span>';
+      h += '</div></div></details>';
+
+      entry.innerHTML = h;
+      debugEntries.appendChild(entry);
+      debugPanel.scrollTop = debugPanel.scrollHeight;
+    }
+
+    function sendMessage() {
+      if (sending) return;
+      var text = (inputMsg.value || '').trim();
+      if (!text) return;
+      inputMsg.value = '';
+      addMsg('user', text);
+      sending = true;
+      btnSend.disabled = true;
+      showTyping();
+
+      fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text, include_debug: true, session_id: sessionId })
+      })
+      .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+      .then(function(result) {
+        hideTyping();
+        if (!result.ok) throw new Error(result.data.detail || 'Error del servidor');
+        addMsg('bot', result.data.answer || result.data.response || '(Sin respuesta)');
+
+        // Actualizar saldo desde el backend (no calculado en JS)
+        if (result.data.balance_remaining_usd != null) {
+          updateBalanceDisplay(result.data.balance_remaining_usd);
+        }
+
+        if (result.data.debug) {
+          buildDebug(result.data.debug);
+        }
+      })
+      .catch(function(err) {
+        hideTyping();
+        addMsg('bot', 'Error: ' + err.message);
+      })
+      .finally(function() {
+        sending = false;
+        btnSend.disabled = false;
+        inputMsg.focus();
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+
+    inputMsg.addEventListener('keydown', function(e) {
+      if ((e.key === 'Enter' || e.keyCode === 13) && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    btnSend.addEventListener('click', function(e) {
+      e.preventDefault();
+      sendMessage();
+    });
+
+    btnClear.addEventListener('click', function() {
+      fetch('/api/session/' + sessionId, { method: 'DELETE' }).catch(function(){});
+      sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      chatMessages.innerHTML = '<div id="chatPlaceholder" style="color:var(--text-muted);text-align:center;margin:auto;font-size:0.95rem;">Escribe un mensaje para comenzar...</div>';
+      debugEntries.innerHTML = '';
+      debugPlaceholder.style.display = 'block';
+      // El saldo NO se reinicia — refleja el saldo real del backend.
+    });
+
+    inputMsg.focus();
+  })();
+  </script>
+</body>
+</html>

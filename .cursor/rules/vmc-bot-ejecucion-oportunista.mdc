@@ -1,0 +1,64 @@
+---
+description: Regla de ejecución oportunista. El roadmap es una guía, no una camisa de fuerza. Si algo de una semana futura tiene sentido hacerlo ahora, hazlo.
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# VMC-Bot — Ejecución Oportunista
+
+## Principio
+
+El roadmap de 6 semanas es una guía de prioridades, NO un calendario rígido. Si estás trabajando en algo y ves que una tarea de una semana futura:
+
+- Se puede hacer con poco esfuerzo adicional ahora
+- Es un prerequisito natural de lo que estás haciendo
+- Elimina un riesgo o bloqueo futuro
+- Es un quick win que mejora lo que ya existe
+
+**HAZLO.** No esperes a que "llegue su semana".
+
+## Ejemplos concretos
+
+### SÍ hacer antes de tiempo
+
+- Estás haciendo ingest de infografías (Semana 1) y ves que puedes dejar el schema de inventario listo (Semana 3) → Hazlo, son 20 minutos y te ahorra contexto después
+- Estás probando el RAG y notas que el prompt caching es fácil de activar (Semana 2 optimization) → Hazlo, cada prueba que corras desde ahora cuesta menos
+- Estás configurando el servidor y puedes dejar el endpoint de webhook de WhatsApp como stub (Semana 2) → Hazlo, es un placeholder que después solo conectas
+- Ves que una validación de Firecrawl (Semana 3) aplica también al scraping actual del Centro de Ayuda → Hazlo, previene bugs ahora
+- El logging básico (Semana 4-5) se puede meter en 30 minutos mientras trabajas en la API → Hazlo, te va a ayudar a debuggear desde ya
+- El rate limit por usuario (Semana 5) es una función pura que no depende de WhatsApp → Hazlo, protege tu API de prueba también
+
+### NO hacer antes de tiempo
+
+- Implementar el live auction co-pilot (Fase 2) cuando Fase 1 no está terminada → No, requiere WebSocket de VMC y datos que no existen
+- Conectar WhatsApp real cuando no tienes el número/eSIM → No, dependencia externa que no controlas
+- Construir el dashboard de métricas (Semana 6) cuando no tienes datos de usuarios reales → No, vas a diseñar para datos imaginarios
+- Optimizar para 200 chats/día cuando aún no manejas 10 → No, optimización prematura
+
+## Criterio para decidir
+
+Antes de hacer algo de una semana futura, pregúntate:
+
+1. ¿Puedo hacerlo en menos de 1 hora? → Probablemente sí, hazlo
+2. ¿Depende de algo que no tengo? (API key, datos de VMC, número WhatsApp) → No, espera
+3. ¿Mejora lo que estoy haciendo ahora mismo? → Sí, hazlo
+4. ¿Es solo "nice to have" sin impacto inmediato? → Espera, hay cosas más urgentes
+5. ¿Me va a ahorrar retrabajo después? → Sí, hazlo
+6. ¿Requiere que algo de esta semana esté terminado primero? → Termina lo actual primero
+
+## Cómo documentar trabajo adelantado
+
+Cuando hagas algo fuera de su semana planificada:
+
+1. **En el código**, agrega un comentario:
+
+```python
+# ADELANTADO de Semana 3: Schema de inventario preparado mientras trabajaba en ingest
+# TODO Semana 3: Conectar con Firecrawl scraping real
+```
+
+2. **Actualiza** `docs/FLUJO_QUE_TENEMOS_Y_FALTA.md` para reflejar que esa tarea ya está (parcial o completamente) resuelta.
+
+## Filosofía
+
+El roadmap existe para no perderte, no para frenarte. Si ves una oportunidad de avanzar algo con bajo esfuerzo y alto impacto, tómala. Lo peor que puede pasar es que llegues a la Semana 3 y ya tengas cosas hechas. La velocidad del proyecto depende de aprovechar estos momentos.

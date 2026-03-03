@@ -1,0 +1,140 @@
+---
+description: Regla para llamadas a la API de Anthropic (Claude Sonnet y Haiku). Aplica en server, rag, y cualquier archivo que llame al LLM.
+globs: ["src/server/", "src/rag/", "prompts/**"]
+alwaysApply: false
+---
+
+# VMC-Bot — Claude / Anthropic API
+
+## Dos modelos, dos propósitos
+
+| Modelo | Uso | Cuándo |
+|--------|-----|--------|
+| Claude Sonnet 4.5 | Respuestas RAG conversacionales, respuestas complejas | Cuando necesitas calidad y contexto largo |
+| Claude Haiku 4.5 | Router de intención, multi-query, tareas rápidas | Cuando necesitas velocidad y bajo costo |
+
+- **NUNCA** uses Sonnet para clasificar intenciones o generar queries. Eso es trabajo de Haiku.
+- **NUNCA** uses Haiku para generar la respuesta final al usuario. Eso es trabajo de Sonnet.
+
+## Llamadas a la API
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()  # usa ANTHROPIC_API_KEY del env
+
+# --- HAIKU: Router de intención ---
+router_response = client.messages.create(
+    model="claude-haiku-4-5-20251001",
+    max_tokens=50,
+    system="Clasifica la intención del mensaje en una de estas categorías: faq, stock_search, soporte_humano, fuera_dominio. Responde SOLO con la categoría.",
+    messages=[{"role": "user", "content": user_message}]
+)
+
+# --- HAIKU: Multi-query ---
+multiquery_response = client.messages.create(
+    model="claude-haiku-4-5-20251001",
+    max_tokens=300,
+    system="Genera 3 variaciones de búsqueda para esta pregunta. Incluye sinónimos peruanos. Responde en JSON: [\"query1\", \"query2\", \"query3\"]",
+    messages=[{"role": "user", "content": user_message}]
+)
+
+# --- SONNET: Respuesta RAG ---
+rag_response = client.messages.create(
+    model="claude-sonnet-4-5-20250514",
+    max_tokens=500,
+    system=system_prompt,  # System prompt v1 completo con persona, glosario, guardrails
+    messages=[
+        {"role": "user", "content": f"Contexto del Centro de Ayuda:\n{rag_context}\n\nPregunta del usuario:\n{user_message}"}
+    ]
+)
+```
+
+## Prompt Caching (IMPLEMENTAR)
+
+El system prompt + glosario se repite en cada mensaje. Con prompt caching ahorras ~70% en tokens de input.
+
+```python
+# Marcar el system prompt como cacheable
+response = client.messages.create(
+    model="claude-sonnet-4-5-20250514",
+    max_tokens=500,
+    system=[
+        {
+            "type": "text",
+            "text": system_prompt_completo,
+            "cache_control": {"type": "ephemeral"}
+        }
+    ],
+    messages=[{"role": "user", "content": prompt_con_contexto}]
+)
+```
+
+**Requisito:** El bloque cacheado debe tener mínimo 1024 tokens (para Sonnet) o 2048 tokens (para Haiku). Nuestro system prompt + glosario supera eso fácilmente.
+
+## System Prompt — Estructura
+
+**Ubicación:** `prompts/system_prompt_v1.md`
+
+El system prompt tiene estas secciones (en este orden):
+
+1. **Identidad:** Eres Subastin, asistente virtual de VMC Subastas
+2. **Rol:** Soporte al comprador, consulta de inventario, explicación de procesos
+3. **Glosario VMC:** SubasCoins, Riesgo Usuario, Calidad de Miembro, Ganador Directo, comisiones, etc.
+4. **Guardrails:**
+   - NUNCA inventar precios, comisiones, plazos
+   - Si no tienes la info, decir "No tengo esa información, te recomiendo contactar a soporte"
+   - SOLO responder sobre VMC Subastas (política Meta 2026)
+   - No dar asesoría legal ni garantías mecánicas
+5. **Tono:** Español peruano, tuteo, amigable pero profesional
+6. **Formato:** Respuestas concisas para WhatsApp (máx ~300 tokens)
+
+## Guardrails de números — Implementación
+
+```python
+# En el prompt de Sonnet, SIEMPRE incluir:
+"""
+REGLA CRÍTICA: Los números (precios, comisiones, porcentajes, plazos)
+SOLO pueden venir del contexto proporcionado arriba. Si el contexto no
+contiene el dato numérico exacto, responde: "No tengo ese dato actualizado.
+Te recomiendo verificar en vmcsubastas.com o contactar a soporte."
+NUNCA inventes, estimes o calcules números por tu cuenta.
+"""
+```
+
+## Formato de respuestas
+
+- Máximo ~300 tokens (WhatsApp tiene límites de lectura)
+- Sin markdown pesado (WhatsApp no renderiza bien)
+- Usar emojis con moderación (máx 1-2 por mensaje)
+- Si la respuesta requiere más detalle, ofrecer link a vmcsubastas.com
+- Siempre terminar con una pregunta o call-to-action cuando sea natural
+
+## Manejo de errores
+
+```python
+try:
+    response = client.messages.create(...)
+except anthropic.APIError as e:
+    # Log del error
+    logger.error(f"Error Anthropic API: {e}")
+    # Fallback: mensaje genérico amable
+    return "Disculpa, estoy teniendo problemas técnicos. ¿Puedes intentar de nuevo en unos segundos?"
+except anthropic.RateLimitError:
+    # Rate limit — esperar y reintentar o mensaje de espera
+    return "Estoy atendiendo muchas consultas ahora. Dame unos segundos y vuelve a preguntar."
+```
+
+## Costos — Tener en cuenta
+
+| Modelo | Input | Output | Con cache |
+|--------|-------|--------|-----------|
+| Sonnet 4.5 | $3/M tokens | $15/M tokens | ~$0.30/M (90% ahorro) |
+| Haiku 4.5 | $1/M tokens | $5/M tokens | ~$0.10/M |
+
+**Optimizaciones de costo:**
+
+- Prompt caching SIEMPRE para el system prompt
+- Haiku para todo lo que no sea la respuesta final
+- Respuestas cortas (max_tokens=500 para Sonnet, 50-300 para Haiku según tarea)
+- No pasar más de 5 chunks de contexto a Sonnet

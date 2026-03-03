@@ -1,0 +1,34 @@
+---
+description: bRAG-langchain como referencia selectiva (patrones only). Stack VMC = Claude + Pinecone + FastAPI.
+globs: src/**/*.py, prompts/*.md
+alwaysApply: false
+---
+
+# bRAG-langchain como Referencia Selectiva para VMC-Bot
+
+Repo de referencia: `https://github.com/bRAGAI/bRAG-langchain.git`. **NO** copiar código. Solo extraer patrones y reimplementar con nuestro stack.
+
+## QUÉ TOMAR
+
+1. **Chunking semántico** (por sección/tema, no por tamaño). Nosotros: chunk por tema del Centro de Ayuda (Registro, SubasCoins, Consignaciones, etc.).
+2. **Multi-Query Retrieval**: generar 3 variaciones de la pregunta con **Claude Haiku**; crítico para español peruano ("carro", "jalar", etc.).
+3. **Reciprocal Rank Fusion (RRF)**: función pura en Python (~15 líneas) para fusionar resultados de las multi-queries.
+4. **Flujo pipeline**: load → chunk → embed → store → retrieve → generate (con nuestras herramientas).
+
+## QUÉ IGNORAR
+
+- OpenAI, LangChain, LangSmith, ChromaDB, Cohere rerank, ColBERT, RAPTOR, indexing avanzado.
+
+## NUESTRO STACK
+
+- LLM: Claude Sonnet 4.5 (respuestas) + Claude Haiku 4.5 (router, multi-query).
+- Embeddings + Vector DB: Pinecone Inference (multilingual-e5-large).
+- Scraping: Firecrawl. Canal: WhatsApp. Servidor: FastAPI.
+
+## REGLAS
+
+- Cero LangChain/OpenAI. Números NUNCA del LLM (solo RAG/JSON). Bot solo dominio VMC. Español peruano. System prompt con glosario y guardrails.
+
+## PIPELINE OBJETIVO
+
+Usuario → Haiku clasifica (FAQ / stock / humano) → Si FAQ: multi-query → embed → search Pinecone → RRF → contexto → Sonnet responde → enviar.
