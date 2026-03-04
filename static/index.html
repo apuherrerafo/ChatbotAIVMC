@@ -216,6 +216,30 @@
       border-radius: 4px;
     }
     .debug-placeholder { color: var(--text-muted); text-align: center; padding: 48px 24px; font-size: 0.95rem; }
+    .qr-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .qr-btn {
+      padding: 8px 16px;
+      background: transparent;
+      color: #53bdeb;
+      border: 1px solid #53bdeb;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+      text-align: center;
+    }
+    .qr-btn:hover {
+      background: #53bdeb22;
+    }
+    .qr-btn:active {
+      background: #53bdeb44;
+    }
   </style>
 </head>
 <body>
@@ -312,6 +336,18 @@
       return s;
     }
 
+    function parseQR(text) {
+      if (!text) return { clean: text, options: [] };
+      var qrRegex = /\[QR:\s*([^\]]+)\]/g;
+      var options = [];
+      var clean = text.replace(qrRegex, function(match, inner) {
+        var parts = inner.split('|').map(function(s) { return s.trim(); }).filter(Boolean);
+        options = options.concat(parts);
+        return '';
+      }).trim();
+      return { clean: clean, options: options };
+    }
+
     function now() {
       return new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
     }
@@ -321,7 +357,42 @@
       if (ph) ph.remove();
       var div = document.createElement('div');
       div.className = 'chat-msg ' + role;
-      div.innerHTML = linkify(formatLikeWhatsApp(esc(text))) + '<div class="time">' + now() + '</div>';
+
+      if (role === 'bot') {
+        var parsed = parseQR(text);
+        var cleanHtml = linkify(formatLikeWhatsApp(esc(parsed.clean)));
+        div.innerHTML = cleanHtml + '<div class="time">' + now() + '</div>';
+
+        if (parsed.options.length > 0) {
+          var qrDiv = document.createElement('div');
+          qrDiv.className = 'qr-buttons';
+          parsed.options.forEach(function(opt) {
+            var btn = document.createElement('button');
+            btn.className = 'qr-btn';
+            btn.textContent = opt;
+            btn.addEventListener('click', function() {
+              // Deshabilitar todos los botones QR de este mensaje
+              var allBtns = qrDiv.querySelectorAll('.qr-btn');
+              allBtns.forEach(function(b) {
+                b.disabled = true;
+                b.style.opacity = '0.5';
+                b.style.cursor = 'default';
+              });
+              // Resaltar el botón seleccionado
+              btn.style.background = '#53bdeb33';
+              btn.style.opacity = '1';
+              // Enviar el texto como mensaje del usuario
+              inputMsg.value = opt;
+              sendMessage();
+            });
+            qrDiv.appendChild(btn);
+          });
+          div.appendChild(qrDiv);
+        }
+      } else {
+        div.innerHTML = linkify(formatLikeWhatsApp(esc(text))) + '<div class="time">' + now() + '</div>';
+      }
+
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
