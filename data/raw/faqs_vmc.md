@@ -32,10 +32,10 @@ Las cuentas son personales e intransferibles.
 Es el módulo donde administras tus fondos sea en SubasCoins y/o dólares americanos.
 
 **¿De qué formas puedo agregar fondos a mi billetera?**  
-Existen dos formas de agregar fondos a tu billetera: mediante una adquisición de SubasCoins o en su defecto una Recarga en dólares.
+Existen dos formas: adquirir SubasCoins con tarjeta de crédito o débito, o recargar saldo en dólares mediante transferencia o depósito en el BCP (CUU). Los SubasCoins no se cargan con depósito bancario, transferencia ni Yape.
 
 **¿Qué son los SubasCoins?**  
-Es la moneda interna de VMC Subastas. 1 SubasCoin equivale a US$1. Puedes adquirir SubasCoins usando tarjeta de crédito o débito.
+Es la moneda interna de VMC Subastas. 1 SubasCoin equivale a US$1. Los SubasCoins solo se cargan con tarjeta de crédito o débito. No se aceptan depósitos bancarios, transferencias ni Yape.
 
 **¿Cómo recargo saldo en dólares?**  
 Mediante transferencia o depósito en el BCP usando tu CUU. Puede tardar hasta 24 horas hábiles en reflejarse en tu billetera.
