@@ -26,6 +26,11 @@ def _looks_like_stock_query(msg: str) -> bool:
         "vi en", "lo vi", "que vi", "encontré", "encontre", "está en la web",
         "esta en la web", "lo tengo", "ya lo vi", "ese carro", "ese auto",
         "ese vehículo", "ese vehiculo", "en esa subasta", "ya encontré",
+        "me interesa ese", "me interesa esa", "voy a pujar", "quiero pujar",
+        "quiero ofertar", "voy a ofertar", "ya lo encontré", "ya lo encontre",
+        "lo encontré en", "lo encontre en", "está listado", "esta listado",
+        "aparece en", "lo vi en", "la vi en", "que aparece", "que está en",
+        "que esta en", "quiero hacer una oferta", "quiero hacer oferta",
     )
     if any(p in text for p in palabras_participacion):
         return False

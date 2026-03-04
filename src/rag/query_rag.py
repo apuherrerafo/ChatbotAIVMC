@@ -456,7 +456,7 @@ def ask_with_router(question: str, use_multi_query: bool = True, history: list[d
             ]
             return chunks, answer, "stock_search"
         except Exception:
-            msg = "Por ahora puedes revisar las ofertas disponibles en vmcsubastas.com. Cuando esté listo, podré ayudarte a buscar carros y camionetas en tiempo real desde aquí."
+            msg = "Por ahora estoy aprendiendo a buscar carros en tiempo real — esa función llega pronto 🚗\n\nMientras tanto, puedes ver todo el inventario disponible directo en 👉 vmcsubastas.com. Ahí encuentras filtros por marca, modelo y precio. ¿Te ayudo con algo más sobre el proceso de subasta?"
             return [], msg, "stock_search"
     if intent == "soporte_humano":
         msg = "Entendido. Puedes contactarnos de Lunes a Viernes de 9am a 6pm por nuestro chat en vivo en la web o al correo contigo@vmcsubastas.com. Un agente te atenderá."
@@ -508,7 +508,7 @@ def ask_with_router_debug(question: str, history: list[dict] | None = None) -> t
                 debug["total_latency_ms"] = int((time.perf_counter() - total_start) * 1000)
                 return [], msg, intent, debug
             except Exception as e:
-                msg = "Por ahora puedes revisar las ofertas disponibles en vmcsubastas.com. Cuando esté listo, podré ayudarte a buscar carros y camionetas en tiempo real desde aquí."
+                msg = "Por ahora estoy aprendiendo a buscar carros en tiempo real — esa función llega pronto 🚗\n\nMientras tanto, puedes ver todo el inventario disponible directo en 👉 vmcsubastas.com. Ahí encuentras filtros por marca, modelo y precio. ¿Te ayudo con algo más sobre el proceso de subasta?"
                 debug["stock_error"] = str(e)
                 debug["total_latency_ms"] = int((time.perf_counter() - total_start) * 1000)
                 return [], msg, intent, debug
