@@ -58,9 +58,10 @@ def set_console_level(level: str = "INFO") -> None:
 
 # ---------------------------------------------------------------------------
 # 3. Rutas de archivos JSONL
-#    Los logs viven en vmc-bot/logs/. Se crean automáticamente si no existen.
+#    Los logs viven en vmc-bot/logs/. En Vercel (read-only) usamos /tmp.
 # ---------------------------------------------------------------------------
-_LOGS_DIR = Path(__file__).resolve().parents[2] / "logs"
+import os as _os
+_LOGS_DIR = Path("/tmp/vmc-bot-logs") if _os.environ.get("VERCEL") else (Path(__file__).resolve().parents[2] / "logs")
 _LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 _LOG_FILES = {

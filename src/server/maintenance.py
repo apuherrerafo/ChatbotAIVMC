@@ -23,8 +23,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-LOG_DIR = ROOT / "logs"
-LOG_DIR.mkdir(exist_ok=True)
+# En Vercel el filesystem es read-only; usar /tmp para logs
+LOG_DIR = Path("/tmp/vmc-bot-logs") if os.environ.get("VERCEL") else (ROOT / "logs")
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 LOG_FILE = LOG_DIR / "maintenance.log"
 
 
