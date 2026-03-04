@@ -88,6 +88,28 @@ def search(index, question: str, top_k: int | None = None):
     return out
 
 
+WHATSAPP_MAX_MESSAGE_CHARS = 4096
+
+
+def trim_response_to_safe_length(text: str, max_chars: int = WHATSAPP_MAX_MESSAGE_CHARS) -> str:
+    """
+    Corta el texto en un límite seguro sin partir palabras ni oraciones.
+    Busca el último . ? ! antes del límite; si no hay, el último espacio.
+    Nunca devuelve una respuesta que termine en una palabra cortada.
+    """
+    if not text or len(text) <= max_chars:
+        return text
+    segment = text[: max_chars + 1]
+    for sep in (".", "?", "!", "。"):
+        last = segment.rfind(sep)
+        if last >= 0:
+            return text[: last + 1].strip()
+    last_space = segment.rfind(" ")
+    if last_space >= 0:
+        return text[:last_space].strip()
+    return text[:max_chars].strip()
+
+
 def build_context(matches, live_block: str | None = None):
     """Convierte los chunks en un solo texto para el LLM, limitando el tamaño total del contexto."""
     parts: list[str] = []
@@ -223,6 +245,7 @@ def answer_with_claude_with_debug(
         tokens = _usage_to_dict(usage)
         block  = msg.content[0] if msg.content else None
         text   = block.text if block and hasattr(block, "text") else str(msg.content)
+        text   = trim_response_to_safe_length(text)
 
         log_cost(
             model="claude-sonnet-4-20250514",
@@ -237,7 +260,8 @@ def answer_with_claude_with_debug(
     except UserFacingError as e:
         system_full = system_blocks[0]["text"] + "\n\nContexto:\n" + context
         log_error("query_rag_user_facing", message=str(e))
-        return e.mensaje, _usage_to_dict(None), 0, system_full, context
+        mensaje = trim_response_to_safe_length(e.mensaje)
+        return mensaje, _usage_to_dict(None), 0, system_full, context
 
     except Exception as e:
         system_full = system_blocks[0]["text"] + "\n\nContexto:\n" + context
@@ -341,11 +365,12 @@ def search_multi_query_rrf_with_debug(index, question: str, top_k_per_query: int
     return fused, queries, list_of_results, latency_ms
 
 
-def ask_rag(question: str, use_multi_query: bool = True, history: list[dict] | None = None):
+def ask_rag(question: str, use_multi_query: bool = True, history: list[dict] | None = None, top_k: int | None = None):
     question = (question or "").strip()
     if not question:
         return [], ""
-    top_k = get_top_k(question)
+    if top_k is None:
+        top_k = get_top_k(question)
     log_event("rag_topk", query=question[:120], top_k=top_k)
     index = get_index()
     if use_multi_query and os.getenv("ANTHROPIC_API_KEY") and _needs_multi_query(question):
@@ -406,12 +431,13 @@ def ask_with_router(question: str, use_multi_query: bool = True, history: list[d
         return [], "", "faq"
     last_bot = _last_assistant_message(history)
     try:
-        from src.rag.router import classify_intent
+        from src.rag.router import classify_intent, get_top_k_for_intent
         intent = classify_intent(question, last_assistant_message=last_bot)
     except Exception:
         intent = "faq"
     if intent == "faq":
-        chunks, answer = ask_rag(question, use_multi_query=use_multi_query, history=history)
+        top_k = get_top_k_for_intent(intent, question)
+        chunks, answer = ask_rag(question, use_multi_query=use_multi_query, history=history, top_k=top_k)
         return chunks, answer, "faq"
     if intent == "stock_search":
         try:
@@ -507,7 +533,8 @@ def ask_with_router_debug(question: str, history: list[dict] | None = None) -> t
     debug["multi_query_latency_ms"] = mq_latency_ms
     debug["multi_query_tokens"] = mq_tokens
 
-    top_k = get_top_k(question)
+    from src.rag.router import get_top_k_for_intent
+    top_k = get_top_k_for_intent(intent, question)
     debug["rag_top_k"] = top_k
     log_event("rag_topk", query=question[:120], top_k=top_k)
     index = get_index()

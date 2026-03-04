@@ -59,6 +59,23 @@ INTENT_EXPLANATIONS = {
 }
 
 
+def get_top_k_for_intent(intent: str, user_message: str) -> int:
+    """
+    TOP_K dinámico para la búsqueda en Pinecone según intent y longitud del mensaje.
+    - faq + mensaje < 8 palabras (intención clara) → 3
+    - faq + mensaje >= 8 palabras (compuesta/ambigua) → 5
+    - stock_search → 3 (el inventario no está en Pinecone)
+    - resto → 3
+    """
+    msg = (user_message or "").strip()
+    words = len(msg.split()) if msg else 0
+    if intent == "stock_search":
+        return 3
+    if intent == "faq":
+        return 5 if words >= 8 else 3
+    return 3
+
+
 def classify_intent(user_message: str, last_assistant_message: str | None = None) -> str:
     """
     Clasifica la intención del usuario. Devuelve uno de: faq, stock_search, soporte_humano, fuera_dominio.
