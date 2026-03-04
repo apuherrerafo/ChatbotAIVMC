@@ -6,6 +6,7 @@ GET  /api/balance → { "balance_usd": X.XX }
 POST /api/balance → { "action": "set"|"add", "amount": X.XX } (protegido con ADMIN_TOKEN)
 Ejecutar: uvicorn src.server.app:app --reload --port 8000
 """
+import asyncio
 import json
 import os
 import sys
@@ -406,7 +407,7 @@ def _build_debug_cost(debug: dict) -> dict:
 
 
 @app.post("/api/ask")
-def api_ask(req: AskRequest, request: Request):
+async def api_ask(req: AskRequest, request: Request):
     """Router de intención + RAG o mensaje según clasificación."""
     from src.rag.query_rag import ask_with_router, ask_rag, ask_with_router_debug
     from src.server.rate_limit import check_rate_limit
@@ -425,20 +426,12 @@ def api_ask(req: AskRequest, request: Request):
             "balance_remaining_usd": 0.0,
         }
 
-    # Rate limit: 3 mensajes/minuto por cliente
+    # Rate limit: esperar en silencio hasta tener hueco, sin mostrar error al usuario
     client_key = _client_key(request)
     allowed, retry_after = check_rate_limit(client_key)
-    if not allowed:
-        log_error(
-            "rate_limit_excedido",
-            message="Cliente excedió 3 msgs/min",
-            client=client_key,
-        )
-        raise HTTPException(
-            status_code=429,
-            detail="Demasiadas consultas. Máximo 3 por minuto. Espera un momento.",
-            headers={"Retry-After": str(int(retry_after or 60))},
-        )
+    while not allowed and retry_after:
+        await asyncio.sleep(retry_after)
+        allowed, retry_after = check_rate_limit(client_key)
 
     use_debug_path = DEBUG_MODE and req.include_debug and not req.skip_router
     # Usar historial enviado por el cliente si viene; si no, el de la sesión (en serverless suele estar vacío)
