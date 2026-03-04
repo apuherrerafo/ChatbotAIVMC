@@ -18,8 +18,8 @@ Para ingresar tu RUC en el registro: 1) Completa los datos básicos (DNI, correo
 **¿Qué pasa si creo una cuenta y no la uso?**  
 Si en los primeros 14 días dejas de realizar alguna actividad transaccional, tu cuenta se dará de baja automáticamente. Descuida que podrás registrarte nuevamente sin problemas.
 
-**¿Puedo tener más de una cuenta?**  
-Cada usuario solo puede tener una cuenta activa en plataforma.
+**¿Puedo tener más de una cuenta en VMC Subastas?**  
+No es posible tener más de una cuenta. VMC Subastas permite una sola cuenta por usuario, sin excepciones. No importa si tienes DNI y RUC — solo se permite un registro activo por persona. Si necesitas gestionar una cuenta empresarial, contacta al equipo de VMC directamente a través de vmcsubastas.com.
 
 **¿Puedo transferir mi cuenta a otra persona?**  
 Las cuentas son personales e intransferibles.
