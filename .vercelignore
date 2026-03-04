@@ -5,6 +5,8 @@ scripts/
 docs/
 *.md
 !README.md
+!prompts/
+!prompts/*.md
 .venv
 venv
 __pycache__

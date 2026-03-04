@@ -259,6 +259,9 @@
 
     var sending   = false;
     var sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    // Historial en el cliente (para Vercel/serverless donde el servidor no persiste memoria entre requests)
+    var conversationHistory = [];
+    var MAX_HISTORY_MESSAGES = 12;
 
     // -----------------------------------------------------------------------
     // Saldo: se carga desde el backend y se actualiza con cada respuesta.
@@ -465,16 +468,25 @@
       btnSend.disabled = true;
       showTyping();
 
+      var body = { question: text, include_debug: true, session_id: sessionId, history: conversationHistory };
       fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, include_debug: true, session_id: sessionId })
+        body: JSON.stringify(body)
       })
       .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
       .then(function(result) {
         hideTyping();
         if (!result.ok) throw new Error(result.data.detail || 'Error del servidor');
-        addMsg('bot', result.data.answer || result.data.response || '(Sin respuesta)');
+        var answerText = result.data.answer || result.data.response || '(Sin respuesta)';
+        addMsg('bot', answerText);
+
+        // Mantener historial en el cliente (para memoria en serverless)
+        conversationHistory.push({ role: 'user', content: text });
+        conversationHistory.push({ role: 'assistant', content: answerText });
+        if (conversationHistory.length > MAX_HISTORY_MESSAGES) {
+          conversationHistory = conversationHistory.slice(-MAX_HISTORY_MESSAGES);
+        }
 
         // Actualizar saldo desde el backend (no calculado en JS)
         if (result.data.balance_remaining_usd != null) {
@@ -512,6 +524,7 @@
     btnClear.addEventListener('click', function() {
       fetch('/api/session/' + sessionId, { method: 'DELETE' }).catch(function(){});
       sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      conversationHistory = [];
       chatMessages.innerHTML = '<div id="chatPlaceholder" style="color:var(--text-muted);text-align:center;margin:auto;font-size:0.95rem;">Escribe un mensaje para comenzar...</div>';
       debugEntries.innerHTML = '';
       debugPlaceholder.style.display = 'block';

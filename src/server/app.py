@@ -128,6 +128,8 @@ class AskRequest(BaseModel):
     skip_router: bool = False
     include_debug: bool = True
     session_id: str = ""
+    # Historial enviado por el cliente (para Vercel/serverless donde la RAM no persiste entre requests)
+    history: list[dict] = []
 
 
 class BalanceRequest(BaseModel):
@@ -296,7 +298,8 @@ def api_ask(req: AskRequest, request: Request):
         )
 
     use_debug_path = DEBUG_MODE and req.include_debug and not req.skip_router
-    history = _get_history(req.session_id) if req.session_id else []
+    # Usar historial enviado por el cliente si viene; si no, el de la sesión (en serverless suele estar vacío)
+    history = req.history if req.history else (_get_history(req.session_id) if req.session_id else [])
     start = time.perf_counter()
 
     try:
