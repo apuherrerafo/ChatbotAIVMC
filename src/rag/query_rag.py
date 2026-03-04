@@ -461,7 +461,7 @@ def ask_with_router(question: str, use_multi_query: bool = True, history: list[d
     if intent == "soporte_humano":
         msg = "Entendido. Puedes contactarnos de Lunes a Viernes de 9am a 6pm por nuestro chat en vivo en la web o al correo contigo@vmcsubastas.com. Un agente te atenderá."
         return [], msg, "soporte_humano"
-    msg = "Solo puedo ayudarte con dudas sobre VMC Subastas: registro, SubasCoins, consignación, ofertas, etc. Si tienes alguna pregunta sobre la plataforma, escríbela y con gusto te ayudo."
+    msg = "¡Hola! 👋 Soy Subastin, el asistente virtual de VMC Subastas. Ese tema se escapa un poco de lo que manejo, pero si tienes dudas sobre registro, SubasCoins, consignación u ofertas, aquí estoy. ¿En qué te puedo ayudar?"
     return [], msg, "fuera_dominio"
 
 
@@ -515,7 +515,7 @@ def ask_with_router_debug(question: str, history: list[dict] | None = None) -> t
         elif intent == "soporte_humano":
             msg = "Entendido. Puedes contactarnos de Lunes a Viernes de 9am a 6pm por nuestro chat en vivo en la web o al correo contigo@vmcsubastas.com. Un agente te atenderá."
         else:
-            msg = "Solo puedo ayudarte con dudas sobre VMC Subastas: registro, SubasCoins, consignación, ofertas, etc. Si tienes alguna pregunta sobre la plataforma, escríbela y con gusto te ayudo."
+            msg = "¡Hola! 👋 Soy Subastin, el asistente virtual de VMC Subastas. Ese tema se escapa un poco de lo que manejo, pero si tienes dudas sobre registro, SubasCoins, consignación u ofertas, aquí estoy. ¿En qué te puedo ayudar?"
         debug["total_latency_ms"] = int((time.perf_counter() - total_start) * 1000)
         return [], msg, intent, debug
 
