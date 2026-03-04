@@ -1,15 +1,28 @@
 # No subir secretos
 .env
 .env.local
+.env.*
+!.env.example
 *.pem
 
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+.pytest_cache/
 .venv/
 venv/
 *.egg-info/
 
-# Datos crudos (opcional: quitar si quieres versionar)
-# data/raw/
-# data/processed/
+# Datos crudos y resultados de eval (no van al repo)
+data/raw/
+data/golden_dataset/eval_results.jsonl
+
+# Node (si existe)
+node_modules/
+
+# IDE / Cursor
+.cursor/
+
+# Vercel
+.vercel
