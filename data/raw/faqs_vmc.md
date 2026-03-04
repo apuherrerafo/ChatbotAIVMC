@@ -13,7 +13,7 @@ Personas naturales mayores de edad, o jurídicas, con capacidad legal y que comp
 Necesitas tus datos personales como DNI, nombre completo, correo, celular.
 
 **¿Cómo me registro con mi RUC?**  
-En la sección "Quiero recibir", selecciona la opción "Factura". Al hacerlo, se habilitará el campo para que ingreses tu RUC, ya sea de tipo 10 o 20.
+Para ingresar tu RUC en el registro: 1) Completa los datos básicos (DNI, correo y teléfono). 2) En la sección "Quiero recibir", selecciona "Factura". 3) Al seleccionar "Factura" se habilita el campo para ingresar tu RUC (tipo 10 o tipo 20).
 
 **¿Qué pasa si creo una cuenta y no la uso?**  
 Si en los primeros 14 días dejas de realizar alguna actividad transaccional, tu cuenta se dará de baja automáticamente. Descuida que podrás registrarte nuevamente sin problemas.
