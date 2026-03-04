@@ -46,6 +46,9 @@ Son diferentes. Sin embargo, ambos fondos pueden usarse dentro de la plataforma 
 **¿Puedo retirar mis fondos?**  
 Sí, siempre que cumplas los requisitos. Te sugiero revisar las condiciones y Términos de la plataforma para ello.
 
+**¿Por qué me cobran un tipo de cambio alto?**  
+El tipo de cambio no lo determina VMC Subastas — lo establece directamente la entidad bancaria o el procesador de pago al momento de realizar la transacción. VMC no tiene control sobre ese valor. Si tienes dudas sobre el tipo de cambio aplicado, consulta directamente con tu banco o entidad financiera.
+
 ---
 
 ## Consignaciones
