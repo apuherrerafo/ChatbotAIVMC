@@ -291,3 +291,24 @@ refresh+eval+audit cada 168h, inventory cada 12h).
 [2026-03-03T22:53:23.867454+00:00] END crawl_inventory: returncode=1
 [2026-03-03T22:53:23.868456+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
 [2026-03-03T22:53:23.939036+00:00] END parse_inventory: returncode=0
+[2026-03-03T23:22:41.592018+00:00] Hilo de mantenimiento lanzado en segundo plano.
+refresh+eval+audit cada 168h, inventory cada 12h).
+[2026-03-03T23:22:41.592018+00:00] START verify_helpcenter_content: ['python', 'scripts/verify_helpcenter_content.py']
+[2026-03-03T23:23:05.018018+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T23:23:05.018018+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T23:23:05.029978+00:00] END verify_helpcenter_content: returncode=1
+[2026-03-03T23:23:05.029978+00:00] START refresh_rag_from_helpcenter --verify: ['python', 'scripts/refresh_rag_from_helpcenter.py', '--verify']
+[2026-03-03T23:23:06.577594+00:00] END refresh_rag_from_helpcenter --verify: returncode=1
+[2026-03-03T23:23:06.578591+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T23:23:06.578591+00:00] START eval_golden: ['python', 'scripts/eval_golden.py']
+[2026-03-03T23:23:06.656331+00:00] END eval_golden: returncode=1
+[2026-03-03T23:23:06.657327+00:00] START audit_rag_content: ['python', 'scripts/audit_rag_content.py']
+[2026-03-03T23:23:06.704171+00:00] END audit_rag_content: returncode=0
+[2026-03-03T23:23:06.704171+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T23:23:06.704171+00:00] START crawl_inventory: ['python', '-m', 'src.ingest.crawl_inventory']
+[2026-03-03T23:23:08.079004+00:00] END crawl_inventory: returncode=1
+[2026-03-03T23:23:08.079004+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T23:23:08.080000+00:00] END crawl_inventory: returncode=1
+[2026-03-03T23:23:08.080000+00:00] START parse_inventory: ['python', '-m', 'src.ingest.parse_inventory']
+[2026-03-03T23:23:08.184650+00:00] END parse_inventory: returncode=0
+[2026-03-03T23:23:08.187640+00:00] END parse_inventory: returncode=0

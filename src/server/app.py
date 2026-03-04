@@ -288,11 +288,32 @@ def whatsapp_verify(
         and hub_verify_token == WEBHOOK_VERIFY_TOKEN
         and hub_challenge
     ):
-        return Response(content=hub_challenge)
+        return Response(content=hub_challenge, media_type="text/plain")
+    raise HTTPException(status_code=403, detail="Token de verificación inválido.")
+
+
+@app.get("/api/webhook")
+def api_webhook_verify(
+    hub_mode: Optional[str] = Query(default=None, alias="hub.mode"),
+    hub_verify_token: Optional[str] = Query(default=None, alias="hub.verify_token"),
+    hub_challenge: Optional[str] = Query(default=None, alias="hub.challenge"),
+):
+    """
+    Verificación de Meta para la URL de webhook /api/webhook.
+    Meta envía hub.mode, hub.verify_token, hub.challenge; retornamos hub.challenge como texto plano.
+    """
+    if (
+        hub_mode == "subscribe"
+        and hub_verify_token
+        and hub_verify_token == WEBHOOK_VERIFY_TOKEN
+        and hub_challenge
+    ):
+        return Response(content=hub_challenge, media_type="text/plain")
     raise HTTPException(status_code=403, detail="Token de verificación inválido.")
 
 
 @app.post("/webhook/whatsapp")
+@app.post("/api/webhook")
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     """
     Recibe mensajes entrantes de WhatsApp Cloud API y responde usando el RAG.

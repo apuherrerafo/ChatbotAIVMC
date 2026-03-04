@@ -81,7 +81,7 @@ def main():
         })
 
     # upsert_records para índices con integrated embedding (Pinecone convierte text -> vector).
-    batch_size = 100
+    batch_size = 96  # límite Pinecone Inference para este índice
     for i in range(0, len(records), batch_size):
         batch = records[i : i + batch_size]
         index.upsert_records(namespace=NAMESPACE, records=batch)

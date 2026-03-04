@@ -31,6 +31,7 @@ def main():
     parser = argparse.ArgumentParser(description="Evaluar RAG con golden dataset")
     parser.add_argument("--limit", type=int, default=0, help="Máximo de entradas a evaluar (0 = todas)")
     parser.add_argument("--skip-router", action="store_true", help="Ir directo a RAG (skip router)")
+    parser.add_argument("--save-answers", action="store_true", help="Guardar respuesta generada en cada línea del jsonl (para audit de calidad)")
     args = parser.parse_args()
 
     # Guard de presupuesto diario específico para scripts de evaluación.
@@ -98,6 +99,8 @@ def main():
             "has_answer": bool((answer or "").strip()),
             "error": str(e) if intent == "error" else None,
         }
+        if args.save_answers and answer:
+            rec["respuesta"] = (answer or "").strip()
         results.append(rec)
         print(f"  [{i}/{total}] {eid} -> {intent} ({latency_ms} ms) chunks={len(chunks or [])} answer_len={rec['answer_len']}")
 

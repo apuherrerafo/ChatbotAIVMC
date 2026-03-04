@@ -16,14 +16,18 @@ os.chdir(ROOT)
 from dotenv import load_dotenv
 load_dotenv(ROOT / ".env")
 
-from src.core.logger import log_error, log_cost, log_rag_query, log_rag_response
+from src.core.logger import log_error, log_cost, log_event, log_rag_query, log_rag_response
 from src.core.resilience import call_claude_with_retry, UserFacingError, MENSAJE_OCUPADO
 import anthropic as _anthropic_module
 
 NAMESPACE = "helpcenter"
-TOP_K = 5
+# Retrieval: menos chunks por defecto para bajar latencia (meta <3s). RAG_TOP_K=5 para preguntas complejas.
+TOP_K = int(os.getenv("RAG_TOP_K", "3"))
 SYSTEM_PROMPT_PATH = ROOT / "prompts" / "system_prompt_v1.md"
-MAX_CONTEXT_CHARS = int(os.getenv("MAX_CONTEXT_CHARS", "20000"))
+# Contexto RAG enviado al LLM: máx 3.000 tokens (~4 chars/token) para reducir input y latencia.
+MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS", "3000"))
+_DEFAULT_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * 4
+MAX_CONTEXT_CHARS = int(os.getenv("MAX_CONTEXT_CHARS", str(_DEFAULT_CONTEXT_CHARS)))
 
 # Cliente singleton — instanciado una vez, reutilizado en todas las llamadas
 _claude_client = None
@@ -48,11 +52,12 @@ def get_index():
     return pc.Index(index_name)
 
 
-def search(index, question: str):
-    """Busca en Pinecone por texto; devuelve lista de chunks con score."""
+def search(index, question: str, top_k: int | None = None):
+    """Busca en Pinecone por texto; devuelve lista de chunks con score. top_k por defecto TOP_K."""
+    k = top_k if top_k is not None else TOP_K
     resp = index.search(
         namespace=NAMESPACE,
-        query={"inputs": {"text": question}, "top_k": TOP_K},
+        query={"inputs": {"text": question}, "top_k": k},
         fields=["text", "topic", "source_url"],
     )
     result = getattr(resp, "result", None) or getattr(resp, "result", resp)
@@ -116,6 +121,26 @@ def _is_subaspass_question(question: str) -> bool:
         return False
     keywords = ("subaspass", "subas pass", "pase", "membresía", "membresia", "planes subas", "precio subas", "cuánto cuesta el pase", "costo subaspass")
     return any(k in q for k in keywords)
+
+
+# --- top_k dinámico: proceso (5) vs definición (3) ---
+PROCESO_KEYWORDS = (
+    "qué hago", "que hago", "cómo", "como", "pasos", "qué pasa si", "que pasa si",
+    "qué sigue", "que sigue", "después de", "despues de", "para qué sirve",
+    "cuándo", "cuando", "requisitos", "documentos", "condiciones",
+    "sanciones", "devolución", "devolucion", "pedir devolución", "pedir devolucion",
+)
+
+
+def get_top_k(query: str) -> int:
+    """
+    Clasificación simple por keywords: si la pregunta implica proceso/flujo/condiciones
+    → top_k=5; si no → top_k=3 (definición o dato puntual).
+    """
+    if not (query or "").strip():
+        return int(os.getenv("RAG_TOP_K", "3"))
+    q = query.lower().strip()
+    return 5 if any(kw in q for kw in PROCESO_KEYWORDS) else 3
 
 
 # --- PASO 3: multi-query condicional ---
@@ -230,12 +255,14 @@ def main():
         print("Escribe una pregunta.")
         return
 
+    top_k = get_top_k(question)
+    log_event("rag_topk", query=question[:120], top_k=top_k)
     index = get_index()
     if os.getenv("ANTHROPIC_API_KEY"):
-        matches = search_multi_query_rrf(index, question, top_k_per_query=5)
+        matches = search_multi_query_rrf(index, question, top_k_per_query=top_k)
         print("(Usando multi-query + RRF)")
     else:
-        matches = search(index, question)
+        matches = search(index, question, top_k=top_k)
     if not matches:
         print("No se encontraron fragmentos relevantes en Pinecone.")
         return
@@ -258,39 +285,40 @@ def main():
         print("(Para generar respuesta con Claude, añade ANTHROPIC_API_KEY en .env)")
 
 
-def search_by_queries_rrf(index, queries: list[str], top_k_per_query: int = 5):
+def search_by_queries_rrf(index, queries: list[str], top_k_per_query: int | None = None):
     from src.rag.rrf import reciprocal_rank_fusion
+    k = top_k_per_query if top_k_per_query is not None else TOP_K
     list_of_results = []
     for q in (queries or []):
         if not q:
             continue
-        hits = search(index, q)
+        hits = search(index, q, top_k=k)
         if hits:
             list_of_results.append(hits)
     if not list_of_results:
         return []
     fused = reciprocal_rank_fusion(list_of_results, id_key="id")
-    return fused[: top_k_per_query * 2]
+    return fused[:k]
 
 
-def search_multi_query_rrf(index, question: str, top_k_per_query: int = 5):
+def search_multi_query_rrf(index, question: str, top_k_per_query: int | None = None):
     from src.rag.multi_query import generate_multi_queries
-    # PASO 3: respetar la misma lógica condicional en el flujo no-debug
+    k = top_k_per_query if top_k_per_query is not None else TOP_K
     if _needs_multi_query(question):
         queries = generate_multi_queries(question, num_queries=2)
     else:
         queries = [question]
-    result = search_by_queries_rrf(index, queries, top_k_per_query)
+    result = search_by_queries_rrf(index, queries, top_k_per_query=k)
     if not result:
         return search(index, question)
     return result
 
 
-def search_multi_query_rrf_with_debug(index, question: str, top_k_per_query: int = 5) -> tuple:
+def search_multi_query_rrf_with_debug(index, question: str, top_k_per_query: int | None = None) -> tuple:
     import time
     from src.rag.multi_query import generate_multi_queries_with_debug
     from src.rag.rrf import reciprocal_rank_fusion
-    # PASO 3: respetar la misma lógica condicional en el flujo debug
+    k = top_k_per_query if top_k_per_query is not None else TOP_K
     if _needs_multi_query(question):
         queries, _, _ = generate_multi_queries_with_debug(question, num_queries=2)
     else:
@@ -300,15 +328,15 @@ def search_multi_query_rrf_with_debug(index, question: str, top_k_per_query: int
     for q in queries:
         if not q:
             continue
-        hits = search(index, q)
+        hits = search(index, q, top_k=k)
         if hits:
             list_of_results.append(hits)
     if not list_of_results:
-        fallback = search(index, question)
+        fallback = search(index, question, top_k=k)
         latency_ms = int((time.perf_counter() - t0) * 1000)
         return fallback, queries, [], latency_ms
     fused = reciprocal_rank_fusion(list_of_results, id_key="id")
-    fused = fused[: top_k_per_query * 2]
+    fused = fused[:k]
     latency_ms = int((time.perf_counter() - t0) * 1000)
     return fused, queries, list_of_results, latency_ms
 
@@ -317,12 +345,13 @@ def ask_rag(question: str, use_multi_query: bool = True, history: list[dict] | N
     question = (question or "").strip()
     if not question:
         return [], ""
+    top_k = get_top_k(question)
+    log_event("rag_topk", query=question[:120], top_k=top_k)
     index = get_index()
-    # PASO 3: respetar la misma lógica condicional en ask_rag
     if use_multi_query and os.getenv("ANTHROPIC_API_KEY") and _needs_multi_query(question):
-        matches = search_multi_query_rrf(index, question, top_k_per_query=5)
+        matches = search_multi_query_rrf(index, question, top_k_per_query=top_k)
     else:
-        matches = search(index, question)
+        matches = search(index, question, top_k=top_k)
 
     live_block = None
     subaspass_chunk = None
@@ -478,11 +507,14 @@ def ask_with_router_debug(question: str, history: list[dict] | None = None) -> t
     debug["multi_query_latency_ms"] = mq_latency_ms
     debug["multi_query_tokens"] = mq_tokens
 
+    top_k = get_top_k(question)
+    debug["rag_top_k"] = top_k
+    log_event("rag_topk", query=question[:120], top_k=top_k)
     index = get_index()
     t0 = time.perf_counter()
-    matches = search_by_queries_rrf(index, queries, top_k_per_query=5)
+    matches = search_by_queries_rrf(index, queries, top_k_per_query=top_k)
     if not matches:
-        matches = search(index, question)
+        matches = search(index, question, top_k=top_k)
     retrieval_latency_ms = int((time.perf_counter() - t0) * 1000)
 
     live_block = None
