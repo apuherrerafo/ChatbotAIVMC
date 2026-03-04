@@ -1,0 +1,16 @@
+# Reducir tamaño del bundle (límite 500MB en Vercel Functions)
+data/
+logs/
+scripts/
+docs/
+*.md
+!README.md
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.env.*
+!.env.example
+tests/
+*.jsonl
