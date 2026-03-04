@@ -20,20 +20,27 @@ def _looks_like_stock_query(msg: str) -> bool:
     if not text:
         return False
 
-    # Palabras que indican intención de buscar/listar stock
+    # Si el mensaje tiene contexto de participación, NO es búsqueda de stock
+    palabras_participacion = (
+        "participar", "participando", "quiero participar", "voy a participar",
+        "vi en", "lo vi", "que vi", "encontré", "encontre", "está en la web",
+        "esta en la web", "lo tengo", "ya lo vi", "ese carro", "ese auto",
+        "ese vehículo", "ese vehiculo", "en esa subasta", "ya encontré",
+    )
+    if any(p in text for p in palabras_participacion):
+        return False
+
     verbos_stock = (
         "tienen", "tiene", "hay", "busco", "buscando", "quiero ver",
         "mostrar", "muestrame", "muéstrame", "que carros hay", "qué carros hay",
         "listar", "lista", "stock", "disponible", "disponibles",
     )
-    # Palabras típicas de vehículos/modelos
     palabras_vehiculo = (
         "carro", "carros", "auto", "autos", "vehiculo", "vehículo", "camioneta",
         "camionetas", "suv", "pickup", "4x4", "kia", "hyundai", "toyota",
         "chevrolet", "nissan", "honda", "mazda", "bmw", "mercedes", "audi",
         "picanto", "sportage", "tucson", "hilux", "yaris", "corolla",
     )
-
     hay_verbo = any(v in text for v in verbos_stock)
     hay_vehiculo = any(w in text for w in palabras_vehiculo)
     return hay_verbo and hay_vehiculo
@@ -112,7 +119,7 @@ def classify_intent_with_debug(
     prompt = """Eres un clasificador de intención para el chatbot de VMC Subastas (plataforma de subastas de vehículos en Perú). Clasifica el mensaje del usuario en exactamente UNA de estas categorías:
 
 - faq: preguntas sobre registro, cuenta, SubasCoins, billetera, consignación, ofertas En Vivo o Negociable, visitas, comisiones, proceso de compra, plazos, soporte. Cualquier duda sobre cómo funciona la plataforma. También cuando el usuario responde con algo corto (sí, no, ok, claro, dale, ya tengo, etc.) a una pregunta que el asistente acaba de hacer sobre VMC: en ese caso es faq para que la conversación continúe.
-- stock_search: el usuario quiere buscar, ver o listar vehículos/autos/camionetas en subasta o disponibles (ej. "tienen hilux", "qué carros hay", "busco una camioneta").
+- stock_search: el usuario quiere buscar, ver o listar vehículos disponibles que aún no conoce (ej. "¿tienen una Hilux?", "qué carros hay", "busco una camioneta 4x4"). NO es stock_search si el usuario ya identificó un vehículo específico y está hablando de participar en él, hacer una oferta, o preguntar sobre ese proceso.
 - soporte_humano: pide hablar con una persona, agente, ejecutivo, o está molesto y quiere escalar (ej. "quiero hablar con alguien", "me atiende un humano", "no me sirve esto").
 - fuera_dominio: el mensaje no tiene que ver con VMC Subastas (otro tema, saludos genéricos sin pregunta, chiste, etc.). No uses fuera_dominio si el usuario está claramente respondiendo a una pregunta del asistente sobre VMC.
 
