@@ -13,19 +13,21 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import requests
+from dotenv import load_dotenv
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Header
+from fastapi.responses import HTMLResponse, FileResponse, Response
+from pydantic import BaseModel
+from typing import Optional
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
-from dotenv import load_dotenv
 load_dotenv(ROOT / ".env")
 
 from src.core.logger import log_event, log_error, log_rag_query
 from src.core.resilience import UserFacingError, MENSAJE_OCUPADO
-from fastapi import FastAPI, HTTPException, Request, Header
-from fastapi.responses import HTMLResponse, FileResponse
-from pydantic import BaseModel
-from typing import Optional
 
 app = FastAPI(title="VMC-Bot — Prueba RAG", version="0.1")
 
@@ -53,6 +55,15 @@ DEBUG_MODE = os.getenv("DEBUG_MODE", "false").strip().lower() == "true"
 INITIAL_BALANCE = float(os.getenv("ANTHROPIC_INITIAL_BALANCE_USD", "5.0"))
 ADMIN_TOKEN = os.getenv("BALANCE_ADMIN_TOKEN", "")  # setear en .env para proteger el endpoint
 BALANCE_KEY = "vmc_bot_balance_usd"
+
+# ---------------------------------------------------------------------------
+# WhatsApp Cloud API (Meta)
+# ---------------------------------------------------------------------------
+WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_BUSINESS_ACCOUNT_ID = os.getenv("WHATSAPP_BUSINESS_ACCOUNT_ID", "")
+WEBHOOK_VERIFY_TOKEN = os.getenv("WEBHOOK_VERIFY_TOKEN", "")
+WHATSAPP_API_BASE = "https://graph.facebook.com/v20.0"
 
 
 def _get_redis():
@@ -118,6 +129,42 @@ def _deduct_balance(cost: float) -> float:
     current = _read_balance()
     new_balance = max(0.0, current - cost)
     return _write_balance(new_balance)
+
+
+def send_whatsapp_text(to_number: str, text: str) -> None:
+    """
+    Envía un mensaje de texto simple por WhatsApp usando la Cloud API.
+    Se ejecuta típicamente en background para no bloquear la respuesta HTTP.
+    """
+    if not WHATSAPP_ACCESS_TOKEN or not WHATSAPP_PHONE_NUMBER_ID:
+        log_error(
+            "whatsapp_send_not_configured",
+            message="Faltan WHATSAPP_ACCESS_TOKEN o WHATSAPP_PHONE_NUMBER_ID",
+        )
+        return
+
+    url = f"{WHATSAPP_API_BASE}/{WHATSAPP_PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {WHATSAPP_ACCESS_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "text",
+        "text": {"body": text[:4096]},
+    }
+
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=10)
+        if resp.status_code >= 400:
+            log_error(
+                "whatsapp_send_error",
+                status_code=resp.status_code,
+                body=resp.text[:500],
+            )
+    except Exception as e:
+        log_error("whatsapp_send_exception", message=str(e))
 
 
 # ---------------------------------------------------------------------------
@@ -223,6 +270,81 @@ def update_balance(req: BalanceRequest, x_admin_token: Optional[str] = Header(de
     else:
         raise HTTPException(status_code=400, detail="action debe ser 'set' o 'add'.")
     return {"ok": True, "balance_usd": new_balance}
+
+
+@app.get("/webhook/whatsapp")
+def whatsapp_verify(
+    hub_mode: Optional[str] = Query(default=None, alias="hub.mode"),
+    hub_verify_token: Optional[str] = Query(default=None, alias="hub.verify_token"),
+    hub_challenge: Optional[str] = Query(default=None, alias="hub.challenge"),
+):
+    """
+    Endpoint de verificación para registrar el webhook en Meta.
+    Meta envía hub.mode, hub.verify_token, hub.challenge como query params.
+    """
+    if (
+        hub_mode == "subscribe"
+        and hub_verify_token
+        and hub_verify_token == WEBHOOK_VERIFY_TOKEN
+        and hub_challenge
+    ):
+        return Response(content=hub_challenge)
+    raise HTTPException(status_code=403, detail="Token de verificación inválido.")
+
+
+@app.post("/webhook/whatsapp")
+async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
+    """
+    Recibe mensajes entrantes de WhatsApp Cloud API y responde usando el RAG.
+    Por ahora maneja solo mensajes de texto.
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido")
+
+    try:
+        entry_list = body.get("entry") or []
+        if not entry_list:
+            return {"status": "ignored"}
+        changes_list = entry_list[0].get("changes") or []
+        if not changes_list:
+            return {"status": "ignored"}
+        value = changes_list[0].get("value") or {}
+        messages = value.get("messages") or []
+        if not messages:
+            return {"status": "ignored"}
+        message = messages[0]
+        if message.get("type") != "text":
+            return {"status": "ignored"}
+        text = (message.get("text") or {}).get("body") or ""
+        from_number = message.get("from") or ""
+    except Exception as e:
+        log_error("whatsapp_webhook_parse_error", message=str(e))
+        return {"status": "ignored"}
+
+    if not text or not from_number:
+        return {"status": "ignored"}
+
+    session_id = f"wa_{from_number}"
+    history = _get_history(session_id)
+
+    from src.rag.query_rag import ask_with_router
+
+    try:
+        _, answer, intent = ask_with_router(text, history=history)
+        reply = answer or "Por ahora no puedo responder, intenta nuevamente en unos minutos."
+    except Exception as e:
+        log_error("whatsapp_webhook_rag_error", message=str(e))
+        reply = "En este momento estoy con problemas técnicos. Intenta escribir de nuevo en unos minutos."
+        intent = "error"
+
+    _append_history(session_id, "user", text)
+    _append_history(session_id, "assistant", reply)
+
+    background_tasks.add_task(send_whatsapp_text, from_number, reply)
+
+    return {"status": "ok", "intent": intent}
 
 
 def _client_key(request: Request) -> str:
