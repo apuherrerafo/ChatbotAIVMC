@@ -23,6 +23,12 @@ Actualizado hace más de 8 meses
 
 [![](https://downloads.intercomcdn.com/i/o/441459179/715822f18ad2f9a698c5c249/FOOTER+3+%284%29+%283%29.png?expires=1772206200&signature=d6ebed59a5d68977da073a35f56748fef5751dceda54b619b4b53ac33eda0249&req=cCQmEsx3nIZWFb4f3HP0gKXX2QhLutkQFf3b5YUL2k6Ag49jyGzoFS5hhZpV%0AFzJqVWDANqMLgAcr8g%3D%3D%0A)](http://vmcsubastas.com/)
 
+## Cómo usar el código de pago
+
+Para usarlo: entra a Banca Web o Banca Móvil del BCP → Pago de Servicios → Pacífico Seguros → selecciona la opción correspondiente (ejemplo: 23 Deducibles Autos Dólares). Usa la placa del vehículo como código de pago.
+
+Después de realizar el pago, adjunta el comprobante en Tu Actividad dentro del plazo indicado.
+
 ¿Ha quedado contestada tu pregunta?
 
 😞😐😃

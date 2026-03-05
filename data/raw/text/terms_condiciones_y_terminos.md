@@ -625,7 +625,7 @@ Todo usuario reconoce y acepta que las condiciones y términos del servicio son 
 
 **a.** Se aplicará una sanción equivalente a la pérdida de 15 Puntos VMC.
 
-**b.** Su consignación será devuelta en SubasCoins a las 23:59:59 horas del día en que fue registrado el incumplimiento.
+**b.** Su consignación será devuelta en SubasCoins a las 23:59:59 horas del día en que fue registrado el incumplimiento. En ofertas En Vivo, la consignación también se retiene si no envías al menos un bid válido durante la subasta — participar implica comprometerse a pujar.
 
 ### 4\. Respecto al incumplimiento de las responsabilidades como ganador habilitado
 
@@ -645,6 +645,8 @@ Todo usuario reconoce y acepta que las condiciones y términos del servicio son 
 **e.** En caso de que se inhabilite permanente su cuenta, todo saldo en dólares disponible en la Billetera será convertido en SubasCoins, los mismos que serán prescritos automáticamente.
 
 **f.** Será restringido a participar en las ofertas de un vendedor a solicitud expresa de este.
+
+La suspensión permanente aplica específicamente para participar en ofertas del mismo vendedor con el que se acumularon tres incumplimientos — no es una suspensión general de la plataforma.
 
 ### 5\. Respecto a su comportamiento en plataforma
 

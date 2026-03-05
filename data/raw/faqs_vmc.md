@@ -60,7 +60,7 @@ Es un monto que se deja en garantía para poder participar en una oferta.
 Cada oferta tiene un monto de consignación. Puedes revisar el monto haciendo clic en "Participa" dentro del detalle de la oferta de tu interés.
 
 **¿La consignación se pierde?**  
-Tu consignación retorna a tu billetera al finalizar el proceso, salvo que incumplas tus responsabilidades como participante o tengas riesgo alto o en su defecto resultes mejor postor o ganador habilitado.
+Tu consignación retorna a tu billetera al finalizar el proceso, salvo que incumplas tus responsabilidades como participante o tengas riesgo alto o en su defecto resultes mejor postor o ganador habilitado. En ofertas En Vivo, la consignación también se retiene si no envías al menos un bid válido durante la subasta — participar implica comprometerse a pujar.
 
 **¿Solo puedo participar con la consignación?**  
 Puedes adquirir el SubasPass, el cual te permite participar de todas las ofertas de plataforma por el tiempo de vigencia de la membresía sin requerir fondos adicionales para consignar.

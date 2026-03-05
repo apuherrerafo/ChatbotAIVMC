@@ -18,6 +18,8 @@ URL: https://ayuda.vmcsubastas.com/es/articles/5819859-videotutoriales
 
 La forma más simple de resolver tus dudas.
 
+Los videotutoriales están en la sección Videotutoriales del Centro de Ayuda en ayuda.vmcsubastas.com. Incluyen temas como: registro, oferta En Vivo, oferta con opción a financiamiento, entre otros.
+
 ![](https://static.intercomassets.com/avatars/5550941/square_128/salmandoz-1679952221.png)
 
 Escrito por Silvana

@@ -10,6 +10,8 @@ URL: https://ayuda.vmcsubastas.com/es/articles/5786151-he-sido-habilitado-para-c
 
 ¿A quién, dónde, cómo y cuándo pago?
 
+Accede a tu Zona de Usuario haciendo clic en tu CUU (esquina superior derecha). Dentro encontrarás Tu Actividad y el Proceso de compra. Cumple todos los pasos dentro del plazo indicado.
+
 ![](https://static.intercomassets.com/avatars/5550941/square_128/salmandoz-1679952221.png)
 
 Escrito por Silvana
@@ -43,7 +45,9 @@ Actualizado hace más de 2 años
 
 [![Al pagar la comisión y subir los documentos solo debes esperar las instrucciones de pago del vendedor.](https://downloads.intercomcdn.com/i/o/432630710/98fcc0c3936ab5ce2c43be6f/Frame+1323.png?expires=1772206200&signature=e67fa88b3a70ec300ff10aba02984ae266a6ff0041465bc3ad33e0fe0bacc9c1&req=cCMlEMp%2BmoBfFb4f3HP0gBcYtJpUVFcfUvWrBpQyWetzhyQ8kaVyqVVTzPOl%0Aoo22g2gu2%2BXgeT8S4g%3D%3D%0A)](https://www.vmcsubastas.com/)
 
-​
+## Qué sigue después de pagar comisión y subir documentos
+
+En esta etapa también puede aplicar el Fee de Habilitación si así lo indican las Condiciones de la oferta. Revisa las condiciones de tu oferta para saber si corresponde pagarlo.
 
 ¿Ha quedado contestada tu pregunta?
 

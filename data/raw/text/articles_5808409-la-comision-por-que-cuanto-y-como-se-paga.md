@@ -8,6 +8,8 @@ URL: https://ayuda.vmcsubastas.com/es/articles/5808409-la-comision-por-que-cuant
 
 # La Comisión, ¿Por qué, cuánto y cómo se paga?
 
+La comisión se calcula sobre el valor del bid del ganador habilitado, no sobre el precio base.
+
 ![](https://static.intercomassets.com/avatars/5550941/square_128/salmandoz-1679952221.png)
 
 Escrito por Silvana
@@ -24,6 +26,11 @@ Actualizado hace más de 2 años
 [![La comisión es un monto que todo ganador habilitado deberá pagar a VMC por concepto de uso del servicio.](https://downloads.intercomcdn.com/i/o/433723559/4a5ff0d5b1265a3452eb665b/PREGUNTA+1-2.png?expires=1772206200&signature=5f503a9fa88199f718b298ed4b15e8a6e36c12bb9892c8151941802b4b1ffe02&req=cCMkEct9mIRWFb4f3HP0gET91wMjitTx9%2FnC2s8QFxwAFr3T3aKLSw414JML%0AWzPIp4xRb3m%2FSQzU3A%3D%3D%0A)](https://downloads.intercomcdn.com/i/o/433723559/4a5ff0d5b1265a3452eb665b/PREGUNTA+1-2.png?expires=1772206200&signature=5f503a9fa88199f718b298ed4b15e8a6e36c12bb9892c8151941802b4b1ffe02&req=cCMkEct9mIRWFb4f3HP0gET91wMjitTx9%2FnC2s8QFxwAFr3T3aKLSw414JML%0AWzPIp4xRb3m%2FSQzU3A%3D%3D%0A)
 
 [![Hola, soy Subastin y estoy aquí para ayudarte a resolver tus dudas.](https://downloads.intercomcdn.com/i/o/435482794/82b706a3edfa96c368c689d5/Frame+1328.png?expires=1772206200&signature=ff9fe981c37dc69e89fdc35f42a7297ed064dee2dcea5a0e8957cbe04d43e2cf&req=cCMiEsF8mohbFb4f3HP0gK1tw2DWSBIpWrJv0ZX%2FezF1Kd8cipEZX%2Bs9vlS%2F%0AoD%2FJus7%2FmxrBJuNxlQ%3D%3D%0A)](http://vmcsubastas.com/)
+
+## Si no tienes fondos suficientes o el plazo
+
+Si no tienes fondos suficientes puedes usar la opción Recarga para completar el pago.
+El plazo para pagar la comisión está indicado en Tu Actividad — debes cumplirlo sin excepción.
 
 ¿Ha quedado contestada tu pregunta?
 

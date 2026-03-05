@@ -41,6 +41,10 @@ Actualizado hace más de 2 años
 
 [![](https://downloads.intercomcdn.com/i/o/441449842/402862b5391aa29eb1910e6f/Frame+1328+%282%29.png?expires=1772135100&signature=4a74e139e2a83451e47f9e56056b735f34dfaced5e316cb87660353210ee2eb6&req=cCQmEs13lYVdFb4f3HP0gCbrZVxXc524r54Q%2B%2BwhBpvSsSDQhVXNUewEqtL%2F%0AWePABQC%2FW8eYTaLPqQ%3D%3D%0A)](http://vmcsubastas.com/)
 
+## Si el vendedor acepta tu propuesta
+
+Si el vendedor acepta tu propuesta, asumes automáticamente las responsabilidades de ganador habilitado. Los pasos exactos los encuentras en el detalle de la oferta y en el Centro de Ayuda.
+
 ¿Ha quedado contestada tu pregunta?
 
 😞😐😃

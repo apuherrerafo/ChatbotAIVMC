@@ -29,6 +29,12 @@ Actualizado hace más de 4 meses
 
 [![](https://downloads.intercomcdn.com/i/o/o4l2zpxx/1778236740/dafe464970501137146aa431d340/FOOTER+3+%284%29.png?expires=1772135100&signature=520f96f4f14a17106583b5503ce9dea4178d55b03bef4004a5786df54422c2c7&req=dScgHst9m4ZbWfMW1HO4zbsoJLo28AAnEsTw8CO%2FGeTwQ6KnnfauLde%2FVJvP%0AOjMTJYpja7tGSoBfRCI%3D%0A)](https://downloads.intercomcdn.com/i/o/o4l2zpxx/1778236740/dafe464970501137146aa431d340/FOOTER+3+%284%29.png?expires=1772135100&signature=520f96f4f14a17106583b5503ce9dea4178d55b03bef4004a5786df54422c2c7&req=dScgHst9m4ZbWfMW1HO4zbsoJLo28AAnEsTw8CO%2FGeTwQ6KnnfauLde%2FVJvP%0AOjMTJYpja7tGSoBfRCI%3D%0A)
 
+## Resumen del proceso
+
+La transferencia se solicita completando el formulario y aceptando los términos.
+Demora hasta 2 días hábiles en procesarse.
+Es irreversible — una vez solicitada no puede cancelarse.
+
 ¿Ha quedado contestada tu pregunta?
 
 😞😐😃
