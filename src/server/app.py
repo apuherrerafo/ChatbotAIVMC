@@ -28,7 +28,94 @@ os.chdir(ROOT)
 load_dotenv(ROOT / ".env")
 
 from src.core.logger import log_event, log_error, log_rag_query
-from src.core.resilience import UserFacingError, MENSAJE_OCUPADO
+from src.core.resilience import UserFacingError, FatalAPIError, MENSAJE_OCUPADO
+
+# Mensajes cuando no hay créditos API: según si el usuario recién inicia o ya estaba en conversación
+MSG_SIN_CREDITOS_INICIO = (
+    "Hola, en unos minutos te atenderemos."
+)
+MSG_SIN_CREDITOS_EN_CONVERSACION = (
+    "Disculpa, ya no te puedo seguir respondiendo. Pronto serás atendido por un asesor."
+)
+
+
+def _mensaje_sin_creditos(history: list) -> str:
+    """Devuelve el mensaje según si hay historial (en conversación) o no (inicio)."""
+    return MSG_SIN_CREDITOS_EN_CONVERSACION if history else MSG_SIN_CREDITOS_INICIO
+
+
+def _notify_handoff(
+    channel: str,
+    session_id: str | None,
+    from_number: str | None = None,
+) -> None:
+    """
+    Registra que un usuario debe ser atendido por un asesor (sin créditos API).
+    - Escribe en logs/handoff_queue.jsonl para que el asesor sepa CUÁNDO y A QUÉ CHAT ir.
+    - Si HANDOFF_WEBHOOK_URL está definido, hace POST con el mismo payload (Slack, email, etc.).
+    """
+    payload = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "channel": channel,
+        "session_id": session_id or "",
+        "from_number": from_number or "",
+        "chat_para_asesor": from_number if channel == "whatsapp" else (session_id or "desconocido"),
+    }
+    try:
+        handoff_file = LOG_DIR / "handoff_queue.jsonl"
+        with open(handoff_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except Exception as e:
+        log_error("handoff_queue_write_error", message=str(e), payload=payload)
+    webhook_url = os.getenv("HANDOFF_WEBHOOK_URL", "").strip()
+    if webhook_url:
+        try:
+            requests.post(webhook_url, json=payload, timeout=5)
+        except Exception as e:
+            log_error("handoff_webhook_error", message=str(e), url=webhook_url[:80])
+
+
+def _notify_asesor_requested(
+    channel: str,
+    session_id: str | None,
+    from_number: str | None = None,
+    user_message: str | None = None,
+) -> None:
+    """
+    Notifica (ej. Slack) que un usuario está pidiendo hablar con un asesor.
+    Se llama cuando el router detecta intent soporte_humano.
+    Configurar ASESOR_REQUEST_WEBHOOK_URL en .env (ej. Slack Incoming Webhook).
+    """
+    chat_id = from_number if channel == "whatsapp" else (session_id or "?")
+    text = f"🔔 *Alguien solicita un asesor*\nCanal: {channel}\nChat: {chat_id}"
+    if user_message:
+        text += f"\nMensaje: \"{user_message[:200]}\""
+    payload = {"text": text}
+    try:
+        queue_file = LOG_DIR / "asesor_requests.jsonl"
+        with open(queue_file, "a", encoding="utf-8") as f:
+            f.write(
+                json.dumps(
+                    {
+                        "ts": datetime.now(timezone.utc).isoformat(),
+                        "channel": channel,
+                        "session_id": session_id or "",
+                        "from_number": from_number or "",
+                        "user_message": (user_message or "")[:500],
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+    except Exception as e:
+        log_error("asesor_request_log_error", message=str(e))
+    webhook_url = os.getenv("ASESOR_REQUEST_WEBHOOK_URL", "").strip()
+    if webhook_url:
+        try:
+            requests.post(webhook_url, json=payload, timeout=5)
+        except Exception as e:
+            log_error("asesor_request_webhook_error", message=str(e), url=webhook_url[:80])
+
 
 app = FastAPI(title="VMC-Bot — Prueba RAG", version="0.1")
 
@@ -352,10 +439,29 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     history = _get_history(session_id)
 
     from src.rag.query_rag import ask_with_router
+    from src.core.resilience import FatalAPIError
 
     try:
         _, answer, intent = ask_with_router(text, history=history)
         reply = answer or "Por ahora no puedo responder, intenta nuevamente en unos minutos."
+        if intent == "soporte_humano":
+            _notify_asesor_requested(
+                channel="whatsapp",
+                session_id=session_id,
+                from_number=from_number,
+                user_message=text,
+            )
+    except FatalAPIError as e:
+        reply = _mensaje_sin_creditos(history)
+        intent = "error"
+        _notify_handoff(channel="whatsapp", session_id=session_id, from_number=from_number)
+        log_error(
+            "whatsapp_fatal_no_credits",
+            message=str(e),
+            session_id=session_id,
+            from_number=from_number,
+            has_history=len(history) > 0,
+        )
     except Exception as e:
         log_error("whatsapp_webhook_rag_error", message=str(e))
         reply = "En este momento estoy con problemas técnicos. Intenta escribir de nuevo en unos minutos."
@@ -406,6 +512,65 @@ def _build_debug_cost(debug: dict) -> dict:
     return {"this_message": total, "breakdown": breakdown}
 
 
+TOPIC_QUICK_REPLIES = {
+    "SubasCoins y billetera": ["¿Cómo adquiero SubasCoins?", "¿Cuánto vale 1 SubasCoin?", "¿Puedo retirar mis fondos?", "¿SubasCoins y recarga son lo mismo?"],
+    "Registro y cuenta": ["¿Qué datos necesito?", "¿Puedo registrarme con RUC?", "¿Puedo tener dos cuentas?", "¿Cómo participo?"],
+    "Consignación": ["¿Cuánto debo consignar?", "¿La consignación se pierde?", "¿Solo puedo participar con la consignación?", "¿Cómo participo en una oferta?"],
+    "Oferta En Vivo": ["¿Qué es el Precio Base?", "¿Qué es el Precio Reserva?", "¿Cuánto dura la subasta?", "¿Qué es ser mejor postor?"],
+    "Oferta Negociable": ["¿Cuántas propuestas puedo enviar?", "¿Las propuestas vencen?", "¿Qué pasa si me aceptan?", "¿Qué es ser mejor postor?"],
+    "Comisión": ["¿Cómo se calcula la comisión?", "¿Qué es el Fee de Habilitación?", "¿Dónde veo el porcentaje?"],
+    "Ganador habilitado": ["¿Qué documentos necesito?", "¿Cuántos días tengo?", "¿Cómo pago la comisión?", "¿Qué pasa si no cumplo?"],
+    "Visitas": ["¿Cómo agendo una visita?", "¿Qué es Sin Opción a visitas?", "¿Tienen almacén propio?", "¿Cómo veo el estado del activo?"],
+    "Sanciones": ["¿Qué pasa si no cumplo?", "¿Cuántos puntos pierdo?", "¿Qué es el Riesgo Usuario?", "¿Puedo participar si tengo deuda?"],
+    "Devolución de saldo": ["¿Cuándo me devuelven la consignación?", "¿Puedo retirar mis fondos?", "¿Cuánto tarda la devolución?", "¿Desde dónde solicito la devolución?"],
+    "Pago y Pacífico": ["¿Cómo uso el código de pago?", "¿Dónde pago desde el BCP?", "¿Dónde subo el comprobante?", "¿Qué es el CUU?"],
+    "Oferta con financiamiento": ["¿Cómo funciona el financiamiento?", "¿Qué requisitos necesito?", "¿Hay videotutoriales?"],
+    "Recarga": ["¿Cómo recargo en dólares?", "¿Cuánto tarda en reflejarse?", "¿Qué es el CUU?"],
+    "SubasTour": ["¿Qué es SubasTour?", "¿Cómo me ayuda antes de consignar?", "¿Dónde lo encuentro?"],
+}
+
+
+def get_quick_replies_for_chunks(chunks: list, answer: str = "", user_question: str = "") -> list:
+    """
+    Devuelve botones contextuales basados en el topic dominante.
+    Filtra el botón que coincida con la pregunta que el usuario acaba de hacer.
+    """
+    IGNORE_TOPICS = {"General", "Lo más consultado", "Videotutoriales", ""}
+    topic_counts = {}
+    for chunk in (chunks or []):
+        topic = chunk.get("topic", "")
+        if topic and topic not in IGNORE_TOPICS:
+            topic_counts[topic] = topic_counts.get(topic, 0) + 1
+    if not topic_counts:
+        return []
+    dominant_topic = max(topic_counts, key=topic_counts.get)
+    candidates = TOPIC_QUICK_REPLIES.get(dominant_topic, [])
+    if not candidates:
+        return []
+
+    # Normalizar la pregunta del usuario para comparar
+    def normalize(text):
+        import re
+        return re.sub(r'[¿?¡!.,\s]', '', (text or "").lower())
+
+    user_q_norm = normalize(user_question)
+
+    filtered = []
+    for option in candidates:
+        option_norm = normalize(option)
+        # Excluir si el botón es casi idéntico a la pregunta del usuario
+        if option_norm == user_q_norm:
+            continue
+        # Excluir si más del 80% de los caracteres del botón están en la pregunta del usuario
+        if len(option_norm) > 0 and len(user_q_norm) > 0:
+            overlap = sum(1 for c in option_norm if c in user_q_norm)
+            if overlap / len(option_norm) > 0.85:
+                continue
+        filtered.append(option)
+
+    return filtered[:4]
+
+
 @app.post("/api/ask")
 async def api_ask(req: AskRequest, request: Request):
     """Router de intención + RAG o mensaje según clasificación."""
@@ -414,13 +579,18 @@ async def api_ask(req: AskRequest, request: Request):
     from src.server.whatsapp_validate import validate_response
     from src.server.cost_estimate import estimate_from_request
 
-    # Bloquear si saldo es 0
+    # Usar historial para mensajes contextuales (inicio vs en conversación)
+    history = req.history if req.history else (_get_history(req.session_id) if req.session_id else [])
+
+    # Bloquear si saldo es 0: mensaje según contexto y avisar al asesor
     current_balance = _read_balance()
     if current_balance <= 0:
+        msg = _mensaje_sin_creditos(history)
+        _notify_handoff(channel="api", session_id=req.session_id or None)
         return {
             "chunks": [],
-            "answer": "El saldo de la demo se ha agotado. Contacta al administrador para recargar.",
-            "response": "El saldo de la demo se ha agotado. Contacta al administrador para recargar.",
+            "answer": msg,
+            "response": msg,
             "intent": "error",
             "ok": False,
             "balance_remaining_usd": 0.0,
@@ -434,8 +604,6 @@ async def api_ask(req: AskRequest, request: Request):
         allowed, retry_after = check_rate_limit(client_key)
 
     use_debug_path = DEBUG_MODE and req.include_debug and not req.skip_router
-    # Usar historial enviado por el cliente si viene; si no, el de la sesión (en serverless suele estar vacío)
-    history = req.history if req.history else (_get_history(req.session_id) if req.session_id else [])
     start = time.perf_counter()
 
     try:
@@ -494,6 +662,18 @@ async def api_ask(req: AskRequest, request: Request):
             _append_history(req.session_id, "user", req.question)
             _append_history(req.session_id, "assistant", answer_str)
 
+        if intent == "soporte_humano":
+            _notify_asesor_requested(
+                channel="api",
+                session_id=req.session_id or None,
+                user_message=req.question,
+            )
+
+        # Botones contextuales basados en el topic de los chunks
+        quick_replies = []
+        if intent == "faq" and chunks:
+            quick_replies = get_quick_replies_for_chunks(chunks, answer, req.question)
+
         out = {
             "chunks": chunks,
             "answer": answer,
@@ -501,6 +681,7 @@ async def api_ask(req: AskRequest, request: Request):
             "intent": intent,
             "ok": True,
             "balance_remaining_usd": balance_remaining,  # ← frontend usa esto
+            "quick_replies": quick_replies,
         }
         if debug is not None:
             out["debug"] = debug
@@ -508,6 +689,24 @@ async def api_ask(req: AskRequest, request: Request):
 
     except HTTPException:
         raise
+    except FatalAPIError as e:
+        # Sin créditos API: mensaje según si el usuario ya estaba en conversación o recién inicia
+        msg = _mensaje_sin_creditos(history)
+        _notify_handoff(channel="api", session_id=req.session_id or None)
+        log_error(
+            "api_fatal_no_credits",
+            message=str(e),
+            session_id=req.session_id or None,
+            has_history=len(history) > 0,
+        )
+        return {
+            "chunks": [],
+            "answer": msg,
+            "response": msg,
+            "intent": "error",
+            "ok": False,
+            "balance_remaining_usd": _read_balance(),
+        }
     except UserFacingError as e:
         elapsed_ms = round((time.perf_counter() - start) * 1000, 1)
         log_error(
