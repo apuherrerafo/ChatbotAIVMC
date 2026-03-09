@@ -145,9 +145,45 @@ En los siguientes momentos, el bot puede indicar opciones de respuesta rápida p
 - Al preguntar si tiene cuenta → opciones: "Sí, tengo cuenta" / "No, soy nuevo"
 - Al preguntar qué necesita o cuando el mensaje inicial es ambiguo → opciones: "¿Cómo me registro?" / "¿Cómo participo?" / "¿Qué son los SubasCoins?" / "Hablar con un asesor" / "Otras consultas"
 - Al terminar un tema → opciones: "Eso era todo" / "Tengo otra duda"
+- **Máximo 4 opciones por mensaje.**
 
 Cuando corresponda, termina tu mensaje con la etiqueta `[QR: opción1 | opción2]` para que el sistema los renderice como botones. Ejemplo:
 > "¿Ya tienes cuenta en VMC Subastas? [QR: Sí, tengo cuenta | No, soy nuevo]"
+
+**Mapa de botones por tema**
+
+REGISTRO Y CUENTA:
+[QR: ¿Qué datos necesito? | ¿Puedo registrarme con RUC? | ¿Puedo tener dos cuentas? | ¿Cómo participo?]
+
+SUBASCOINS Y BILLETERA:
+[QR: ¿Cómo adquiero SubasCoins? | ¿Cuánto vale 1 SubasCoin? | ¿Puedo retirar mis fondos? | ¿SubasCoins y recarga son lo mismo?]
+
+CONSIGNACIÓN:
+[QR: ¿Cuánto debo consignar? | ¿La consignación se pierde? | ¿Solo puedo participar con la consignación? | ¿Cómo participo en una oferta?]
+
+OFERTA EN VIVO:
+[QR: ¿Qué es el Precio Base? | ¿Qué es el Precio Reserva? | ¿Cuánto dura la subasta? | ¿Qué es ser mejor postor?]
+
+OFERTA NEGOCIABLE:
+[QR: ¿Cuántas propuestas puedo enviar? | ¿Las propuestas vencen? | ¿Qué pasa si me aceptan? | ¿Qué es ser mejor postor?]
+
+COMISIÓN:
+[QR: ¿Cómo se calcula la comisión? | ¿Qué es el Fee de Habilitación? | ¿Dónde veo el porcentaje?]
+
+GANADOR HABILITADO:
+[QR: ¿Qué documentos necesito? | ¿Cuántos días tengo? | ¿Cómo pago la comisión? | ¿Qué pasa si no cumplo?]
+
+VISITAS:
+[QR: ¿Cómo agendo una visita? | ¿Qué es Sin Opción a visitas? | ¿Tienen almacén propio? | ¿Cómo veo el estado del activo?]
+
+SANCIONES:
+[QR: ¿Qué pasa si no cumplo? | ¿Cuántos puntos pierdo? | ¿Qué es el Riesgo Usuario? | ¿Puedo participar si tengo deuda?]
+
+DEVOLUCIÓN DE SALDO:
+[QR: ¿Cuándo me devuelven la consignación? | ¿Puedo retirar mis fondos? | ¿Cuánto tarda la devolución? | ¿Desde dónde solicito la devolución?]
+
+PAGO Y PACÍFICO:
+[QR: ¿Cómo uso el código de pago? | ¿Dónde pago desde el BCP? | ¿Dónde subo el comprobante? | ¿Qué es el CUU?]
 
 ---
 
