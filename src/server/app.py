@@ -512,65 +512,6 @@ def _build_debug_cost(debug: dict) -> dict:
     return {"this_message": total, "breakdown": breakdown}
 
 
-TOPIC_QUICK_REPLIES = {
-    "SubasCoins y billetera": ["¿Cómo adquiero SubasCoins?", "¿Cuánto vale 1 SubasCoin?", "¿Puedo retirar mis fondos?", "¿SubasCoins y recarga son lo mismo?"],
-    "Registro y cuenta": ["¿Qué datos necesito?", "¿Puedo registrarme con RUC?", "¿Puedo tener dos cuentas?", "¿Cómo participo?"],
-    "Consignación": ["¿Cuánto debo consignar?", "¿La consignación se pierde?", "¿Solo puedo participar con la consignación?", "¿Cómo participo en una oferta?"],
-    "Oferta En Vivo": ["¿Qué es el Precio Base?", "¿Qué es el Precio Reserva?", "¿Cuánto dura la subasta?", "¿Qué es ser mejor postor?"],
-    "Oferta Negociable": ["¿Cuántas propuestas puedo enviar?", "¿Las propuestas vencen?", "¿Qué pasa si me aceptan?", "¿Qué es ser mejor postor?"],
-    "Comisión": ["¿Cómo se calcula la comisión?", "¿Qué es el Fee de Habilitación?", "¿Dónde veo el porcentaje?"],
-    "Ganador habilitado": ["¿Qué documentos necesito?", "¿Cuántos días tengo?", "¿Cómo pago la comisión?", "¿Qué pasa si no cumplo?"],
-    "Visitas": ["¿Cómo agendo una visita?", "¿Qué es Sin Opción a visitas?", "¿Tienen almacén propio?", "¿Cómo veo el estado del activo?"],
-    "Sanciones": ["¿Qué pasa si no cumplo?", "¿Cuántos puntos pierdo?", "¿Qué es el Riesgo Usuario?", "¿Puedo participar si tengo deuda?"],
-    "Devolución de saldo": ["¿Cuándo me devuelven la consignación?", "¿Puedo retirar mis fondos?", "¿Cuánto tarda la devolución?", "¿Desde dónde solicito la devolución?"],
-    "Pago y Pacífico": ["¿Cómo uso el código de pago?", "¿Dónde pago desde el BCP?", "¿Dónde subo el comprobante?", "¿Qué es el CUU?"],
-    "Oferta con financiamiento": ["¿Cómo funciona el financiamiento?", "¿Qué requisitos necesito?", "¿Hay videotutoriales?"],
-    "Recarga": ["¿Cómo recargo en dólares?", "¿Cuánto tarda en reflejarse?", "¿Qué es el CUU?"],
-    "SubasTour": ["¿Qué es SubasTour?", "¿Cómo me ayuda antes de consignar?", "¿Dónde lo encuentro?"],
-}
-
-
-def get_quick_replies_for_chunks(chunks: list, answer: str = "", user_question: str = "") -> list:
-    """
-    Devuelve botones contextuales basados en el topic dominante.
-    Filtra el botón que coincida con la pregunta que el usuario acaba de hacer.
-    """
-    IGNORE_TOPICS = {"General", "Lo más consultado", "Videotutoriales", ""}
-    topic_counts = {}
-    for chunk in (chunks or []):
-        topic = chunk.get("topic", "")
-        if topic and topic not in IGNORE_TOPICS:
-            topic_counts[topic] = topic_counts.get(topic, 0) + 1
-    if not topic_counts:
-        return []
-    dominant_topic = max(topic_counts, key=topic_counts.get)
-    candidates = TOPIC_QUICK_REPLIES.get(dominant_topic, [])
-    if not candidates:
-        return []
-
-    # Normalizar la pregunta del usuario para comparar
-    def normalize(text):
-        import re
-        return re.sub(r'[¿?¡!.,\s]', '', (text or "").lower())
-
-    user_q_norm = normalize(user_question)
-
-    filtered = []
-    for option in candidates:
-        option_norm = normalize(option)
-        # Excluir si el botón es casi idéntico a la pregunta del usuario
-        if option_norm == user_q_norm:
-            continue
-        # Excluir si más del 80% de los caracteres del botón están en la pregunta del usuario
-        if len(option_norm) > 0 and len(user_q_norm) > 0:
-            overlap = sum(1 for c in option_norm if c in user_q_norm)
-            if overlap / len(option_norm) > 0.85:
-                continue
-        filtered.append(option)
-
-    return filtered[:4]
-
-
 @app.post("/api/ask")
 async def api_ask(req: AskRequest, request: Request):
     """Router de intención + RAG o mensaje según clasificación."""
@@ -669,10 +610,7 @@ async def api_ask(req: AskRequest, request: Request):
                 user_message=req.question,
             )
 
-        # Botones contextuales basados en el topic de los chunks
         quick_replies = []
-        if intent == "faq" and chunks:
-            quick_replies = get_quick_replies_for_chunks(chunks, answer, req.question)
 
         out = {
             "chunks": chunks,
