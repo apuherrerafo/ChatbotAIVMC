@@ -123,6 +123,9 @@ try:
     from src.server.maintenance import start_background_maintenance
     @app.on_event("startup")
     def _startup_maintenance() -> None:
+        # En Vercel no se despliegan scripts/; no iniciar mantenimiento para evitar "No such file or directory"
+        if os.environ.get("VERCEL"):
+            return
         start_background_maintenance()
 except Exception:
     pass
