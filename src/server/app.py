@@ -248,6 +248,7 @@ def send_whatsapp_text(to_number: str, text: str) -> None:
         if resp.status_code >= 400:
             log_error(
                 "whatsapp_send_error",
+                message=f"HTTP {resp.status_code}: {resp.text[:200]}",
                 status_code=resp.status_code,
                 body=resp.text[:500],
             )
